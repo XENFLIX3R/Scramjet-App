@@ -387,7 +387,7 @@
     <script src="epoxy/index.js"></script>
     <script src="register-sw.js"></script>
     <script>
-        // Search function (from search.js)
+        // Search function
         function search(input, template) {
             try {
                 return new URL(input).toString();
@@ -399,7 +399,7 @@
             return template.replace("%s", encodeURIComponent(input));
         }
     </script>
-    <script type="module">
+    <script>
         const urlInput = document.getElementById('urlInput');
         const homeSearchInput = document.getElementById('homeSearchInput');
         const goBtn = document.getElementById('goBtn');
