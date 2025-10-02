@@ -386,7 +386,19 @@
     <script src="baremux/index.js"></script>
     <script src="epoxy/index.js"></script>
     <script src="register-sw.js"></script>
-    <script src="search.js"></script>
+    <script>
+        // Search function (from search.js)
+        function search(input, template) {
+            try {
+                return new URL(input).toString();
+            } catch (err) {}
+            try {
+                const url = new URL(`http://${input}`);
+                if (url.hostname.includes(".")) return url.toString();
+            } catch (err) {}
+            return template.replace("%s", encodeURIComponent(input));
+        }
+    </script>
     <script type="module">
         const urlInput = document.getElementById('urlInput');
         const homeSearchInput = document.getElementById('homeSearchInput');
@@ -406,15 +418,9 @@
         function normalizeUrl(input) {
             input = input.trim();
             
-            if (!input.includes('.') || input.includes(' ')) {
-                return 'https://www.google.com/search?q=' + encodeURIComponent(input);
-            }
-            
-            if (!input.startsWith('http://') && !input.startsWith('https://')) {
-                input = 'https://' + input;
-            }
-            
-            return input;
+            // Use the search function for proper URL handling
+            const searchEngine = "https://www.google.com/search?q=%s";
+            return search(input, searchEngine);
         }
 
         function showLoading() {
