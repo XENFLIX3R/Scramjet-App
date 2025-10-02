@@ -13,48 +13,84 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #202124;
-            color: #e8eaed;
+            background: #000000;
+            color: #ffffff;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(138, 43, 226, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(138, 43, 226, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .browser-header {
-            background: #292a2d;
-            padding: 12px 16px;
-            border-bottom: 1px solid #3c4043;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.15);
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #8a2be2, #9d4edd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            margin-right: 8px;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .nav-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: #3c4043;
-            color: #e8eaed;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            background: rgba(20, 20, 20, 0.8);
+            color: #8a2be2;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
         }
 
-        .nav-btn:hover {
-            background: #5f6368;
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+            transform: translateY(-2px);
         }
 
         .nav-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.3;
             cursor: not-allowed;
         }
 
@@ -62,66 +98,87 @@
             flex: 1;
             display: flex;
             align-items: center;
-            background: #3c4043;
-            border-radius: 24px;
-            padding: 8px 16px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 10px;
+            padding: 10px 18px;
             gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .url-bar-container:focus-within {
+            border-color: #8a2be2;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
         }
 
         .lock-icon {
-            color: #81c995;
-            font-size: 16px;
+            color: #8a2be2;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .url-input {
             flex: 1;
             background: transparent;
             border: none;
-            color: #e8eaed;
+            color: #ffffff;
             font-size: 14px;
             outline: none;
         }
 
         .url-input::placeholder {
-            color: #9aa0a6;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .go-btn {
-            background: #8ab4f8;
-            color: #202124;
+            background: linear-gradient(135deg, #8a2be2, #9d4edd);
+            color: #ffffff;
             border: none;
-            padding: 6px 16px;
-            border-radius: 16px;
+            padding: 8px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 500;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
         }
 
         .go-btn:hover {
-            background: #aecbfa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.5);
         }
 
         .menu-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: transparent;
-            color: #e8eaed;
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            background: rgba(20, 20, 20, 0.8);
+            color: #8a2be2;
             cursor: pointer;
             font-size: 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            background: rgba(138, 43, 226, 0.2);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
         }
 
         .iframe-container {
             flex: 1;
-            background: #fff;
+            background: #000;
             position: relative;
             overflow: hidden;
+            z-index: 1;
         }
 
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            background: #fff;
         }
 
         .loading-bar {
@@ -129,10 +186,11 @@
             top: 0;
             left: 0;
             height: 3px;
-            background: #8ab4f8;
+            background: linear-gradient(90deg, #8a2be2, #9d4edd, #c77dff);
             width: 0%;
             transition: width 0.3s;
             z-index: 1000;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.8);
         }
 
         .loading-bar.active {
@@ -151,81 +209,120 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
+            position: relative;
+        }
+
+        .home-screen::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
+            filter: blur(60px);
+            pointer-events: none;
         }
 
         .home-screen h1 {
-            font-size: 48px;
-            margin-bottom: 24px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: 8px;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #8a2be2, #9d4edd, #c77dff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(138, 43, 226, 0.5);
+            position: relative;
+            z-index: 2;
         }
 
         .home-search {
-            width: 600px;
+            width: 700px;
             max-width: 90%;
+            position: relative;
+            z-index: 2;
         }
 
         .home-search input {
             width: 100%;
-            padding: 16px 24px;
-            border: none;
-            border-radius: 28px;
+            padding: 18px 28px;
+            border: 2px solid rgba(138, 43, 226, 0.3);
+            border-radius: 12px;
             font-size: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            background: rgba(20, 20, 20, 0.8);
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .home-search input:focus {
+            outline: none;
+            border-color: #8a2be2;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+        }
+
+        .home-search input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .quick-links {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 24px;
-            margin-top: 48px;
-            max-width: 800px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+            max-width: 900px;
             padding: 0 24px;
+            position: relative;
+            z-index: 2;
         }
 
         .quick-link {
-            background: rgba(255,255,255,0.15);
+            background: rgba(20, 20, 20, 0.6);
             backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 16px;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(138, 43, 226, 0.2);
             text-align: center;
             cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
+            transition: all 0.3s ease;
             text-decoration: none;
-            color: #fff;
+            color: #ffffff;
+            font-weight: 500;
         }
 
         .quick-link:hover {
-            transform: translateY(-4px);
-            background: rgba(255,255,255,0.25);
+            transform: translateY(-6px);
+            background: rgba(138, 43, 226, 0.15);
+            border-color: #8a2be2;
+            box-shadow: 0 8px 30px rgba(138, 43, 226, 0.3);
         }
 
-        .quick-link-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
+        .quick-link-text {
+            font-size: 14px;
+            letter-spacing: 0.5px;
         }
 
-        .error-page {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            background: #fff;
-            color: #202124;
-            padding: 24px;
-            text-align: center;
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
+            }
         }
 
-        .error-page h1 {
-            font-size: 72px;
-            color: #dc3545;
-            margin-bottom: 16px;
+        .brand {
+            animation: glow 3s ease-in-out infinite;
         }
     </style>
 </head>
 <body>
     <div class="browser-header">
+        <div class="brand">SR71</div>
+        
         <div class="nav-buttons">
             <button class="nav-btn" id="backBtn" title="Back" disabled>←</button>
             <button class="nav-btn" id="forwardBtn" title="Forward" disabled>→</button>
@@ -234,7 +331,7 @@
         </div>
         
         <div class="url-bar-container">
-            <span class="lock-icon">🔒</span>
+            <span class="lock-icon">HTTPS</span>
             <input 
                 type="text" 
                 class="url-input" 
@@ -251,7 +348,7 @@
         <div class="loading-bar" id="loadingBar"></div>
         
         <div class="home-screen" id="homeScreen">
-            <h1>SR71 Browser</h1>
+            <h1>SR71</h1>
             <div class="home-search">
                 <input 
                     type="text" 
@@ -262,28 +359,22 @@
             
             <div class="quick-links">
                 <a class="quick-link" data-url="https://www.google.com">
-                    <div class="quick-link-icon">🔍</div>
-                    <div>Google</div>
+                    <div class="quick-link-text">Google</div>
                 </a>
                 <a class="quick-link" data-url="https://www.youtube.com">
-                    <div class="quick-link-icon">📺</div>
-                    <div>YouTube</div>
+                    <div class="quick-link-text">YouTube</div>
                 </a>
                 <a class="quick-link" data-url="https://www.github.com">
-                    <div class="quick-link-icon">💻</div>
-                    <div>GitHub</div>
+                    <div class="quick-link-text">GitHub</div>
                 </a>
                 <a class="quick-link" data-url="https://www.twitter.com">
-                    <div class="quick-link-icon">🐦</div>
-                    <div>Twitter</div>
+                    <div class="quick-link-text">Twitter</div>
                 </a>
                 <a class="quick-link" data-url="https://www.reddit.com">
-                    <div class="quick-link-icon">🤖</div>
-                    <div>Reddit</div>
+                    <div class="quick-link-text">Reddit</div>
                 </a>
                 <a class="quick-link" data-url="https://www.wikipedia.org">
-                    <div class="quick-link-icon">📚</div>
-                    <div>Wikipedia</div>
+                    <div class="quick-link-text">Wikipedia</div>
                 </a>
             </div>
         </div>
@@ -291,9 +382,10 @@
         <iframe id="browserFrame" style="display: none;"></iframe>
     </div>
 
-    <script src="/scramjet/scramjet.codecs.js"></script>
-    <script src="/scramjet/scramjet.config.js"></script>
-    <script src="/scramjet/scramjet.client.js" type="module"></script>
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="baremux/index.js"></script>
+    <script src="epoxy/index.js"></script>
+    <script src="register-sw.js"></script>
     <script type="module">
         const urlInput = document.getElementById('urlInput');
         const homeSearchInput = document.getElementById('homeSearchInput');
@@ -313,12 +405,10 @@
         function normalizeUrl(input) {
             input = input.trim();
             
-            // Check if it's a search query
             if (!input.includes('.') || input.includes(' ')) {
                 return 'https://www.google.com/search?q=' + encodeURIComponent(input);
             }
             
-            // Add protocol if missing
             if (!input.startsWith('http://') && !input.startsWith('https://')) {
                 input = 'https://' + input;
             }
@@ -337,7 +427,7 @@
 
         function loadUrl(url) {
             const normalizedUrl = normalizeUrl(url);
-            const proxyUrl = '/scramjet/service/' + encodeURIComponent(normalizedUrl);
+            const proxyUrl = '~/' + normalizedUrl;
             
             showLoading();
             homeScreen.style.display = 'none';
@@ -345,7 +435,6 @@
             browserFrame.src = proxyUrl;
             urlInput.value = normalizedUrl;
 
-            // Add to history
             if (historyIndex < history.length - 1) {
                 history = history.slice(0, historyIndex + 1);
             }
@@ -368,7 +457,6 @@
             forwardBtn.disabled = historyIndex >= history.length - 1;
         }
 
-        // Event listeners
         goBtn.addEventListener('click', () => {
             if (urlInput.value) {
                 loadUrl(urlInput.value);
@@ -392,7 +480,7 @@
             if (historyIndex > 0) {
                 historyIndex--;
                 const url = history[historyIndex];
-                browserFrame.src = '/scramjet/service/' + encodeURIComponent(url);
+                browserFrame.src = '~/' + url;
                 urlInput.value = url;
                 updateNavButtons();
             }
@@ -402,7 +490,7 @@
             if (historyIndex < history.length - 1) {
                 historyIndex++;
                 const url = history[historyIndex];
-                browserFrame.src = '/scramjet/service/' + encodeURIComponent(url);
+                browserFrame.src = '~/' + url;
                 urlInput.value = url;
                 updateNavButtons();
             }
@@ -423,7 +511,6 @@
             });
         });
 
-        // Initialize
         showHome();
     </script>
 </body>
