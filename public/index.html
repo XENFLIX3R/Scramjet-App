@@ -1,526 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SR71 Browser</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #000000;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(rgba(138, 43, 226, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(138, 43, 226, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .browser-header {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 14px 20px;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.15);
-        }
-
-        .brand {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #8a2be2, #9d4edd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-            margin-right: 8px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .nav-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            background: rgba(20, 20, 20, 0.8);
-            color: #8a2be2;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .nav-btn:hover:not(:disabled) {
-            background: rgba(138, 43, 226, 0.2);
-            border-color: #8a2be2;
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
-            transform: translateY(-2px);
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .url-bar-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 10px;
-            padding: 10px 18px;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .url-bar-container:focus-within {
-            border-color: #8a2be2;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
-        }
-
-        .lock-icon {
-            color: #8a2be2;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .url-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .url-input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .go-btn {
-            background: linear-gradient(135deg, #8a2be2, #9d4edd);
-            color: #ffffff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        .go-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.5);
-        }
-
-        .menu-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            background: rgba(20, 20, 20, 0.8);
-            color: #8a2be2;
-            cursor: pointer;
-            font-size: 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .menu-btn:hover {
-            background: rgba(138, 43, 226, 0.2);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
-        }
-
-        .iframe-container {
-            flex: 1;
-            background: #000;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff;
-        }
-
-        .loading-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #8a2be2, #9d4edd, #c77dff);
-            width: 0%;
-            transition: width 0.3s;
-            z-index: 1000;
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.8);
-        }
-
-        .loading-bar.active {
-            animation: loading 2s ease-in-out infinite;
-        }
-
-        @keyframes loading {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-
-        .home-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            background: #000000;
-            position: relative;
-        }
-
-        .home-screen::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
-            filter: blur(60px);
-            pointer-events: none;
-        }
-
-        .home-screen h1 {
-            font-size: 64px;
-            font-weight: 800;
-            letter-spacing: 8px;
-            margin-bottom: 32px;
-            background: linear-gradient(135deg, #8a2be2, #9d4edd, #c77dff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(138, 43, 226, 0.5);
-            position: relative;
-            z-index: 2;
-        }
-
-        .home-search {
-            width: 700px;
-            max-width: 90%;
-            position: relative;
-            z-index: 2;
-        }
-
-        .home-search input {
-            width: 100%;
-            padding: 18px 28px;
-            border: 2px solid rgba(138, 43, 226, 0.3);
-            border-radius: 12px;
-            font-size: 16px;
-            background: rgba(20, 20, 20, 0.8);
-            color: #ffffff;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .home-search input:focus {
-            outline: none;
-            border-color: #8a2be2;
-            box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
-        }
-
-        .home-search input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .quick-links {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 20px;
-            margin-top: 60px;
-            max-width: 900px;
-            padding: 0 24px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .quick-link {
-            background: rgba(20, 20, 20, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        .quick-link:hover {
-            transform: translateY(-6px);
-            background: rgba(138, 43, 226, 0.15);
-            border-color: #8a2be2;
-            box-shadow: 0 8px 30px rgba(138, 43, 226, 0.3);
-        }
-
-        .quick-link-text {
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-            }
-            50% {
-                text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
-            }
-        }
-
-        .brand {
-            animation: glow 3s ease-in-out infinite;
-        }
-    </style>
-</head>
-<body>
-    <div class="browser-header">
-        <div class="brand">SR71</div>
-        
-        <div class="nav-buttons">
-            <button class="nav-btn" id="backBtn" title="Back" disabled>←</button>
-            <button class="nav-btn" id="forwardBtn" title="Forward" disabled>→</button>
-            <button class="nav-btn" id="reloadBtn" title="Reload">↻</button>
-            <button class="nav-btn" id="homeBtn" title="Home">⌂</button>
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+        />
+        <title>Scramjet</title>
+        <link rel="shortcut icon" content="favicon.webp" />
+        <link rel="stylesheet" href="index.css" />
+        <script src="/scram/scramjet.all.js"></script>
+        <script src="baremux/index.js" defer></script>
+        <script src="epoxy/index.js" defer></script>
+        <script src="register-sw.js" defer></script>
+        <script src="search.js" defer></script>
+        <script src="index.js" defer></script>
+    </head>
+    <body>
+        <div
+            title="Scramjet Logo"
+            class="flex-center logo-wrapper header-center"
+        >
+            <img class="logo" src="sj.png" alt="Scramjet" />
+            <h1>Scramjet | MW</h1>
         </div>
-        
-        <div class="url-bar-container">
-            <span class="lock-icon">HTTPS</span>
-            <input 
-                type="text" 
-                class="url-input" 
-                id="urlInput" 
-                placeholder="Search or enter website address"
+        <div class="flex-center desc left-margin">
+            <p>
+                Scramjet is an experimental interception based web proxy designed to evade internet censorship, 
+                bypass arbitrary web browser restrictions and innovate web proxy technologies.
+            </p>
+        </div>
+        <form id="sj-form" class="flex-center">
+            <input
+                id="sj-search-engine"
+                value="https://www.google.com/search?q=%s"
+                type="hidden"
             />
-            <button class="go-btn" id="goBtn">Go</button>
+            <input id="sj-address" type="text" placeholder="Search the web freely" />
+        </form>
+        <div class="desc left-margin">
+            <p id="sj-error"></p>
+            <pre id="sj-error-code"></pre>
         </div>
-        
-        <button class="menu-btn" title="Menu">⋮</button>
-    </div>
+        <footer>
+            <div>
 
-    <div class="iframe-container">
-        <div class="loading-bar" id="loadingBar"></div>
-        
-        <div class="home-screen" id="homeScreen">
-            <h1>SR71</h1>
-            <div class="home-search">
-                <input 
-                    type="text" 
-                    placeholder="Search the web..." 
-                    id="homeSearchInput"
-                />
+                    title="The Mercury Workshop GitHub organization"
+                    href="https://github.com/MercuryWorkshop"
+                    >Mercury Workshop</a
+                >
+
+                    title="The example demo app for Scramjet"
+                    href="https://github.com/MercuryWorkshop/Scramjet-Demo"
+                    >GitHub</a
+                >
+                <a title="License information" href="credits.html">Credits</a>
             </div>
-            
-            <div class="quick-links">
-                <a class="quick-link" data-url="https://www.google.com">
-                    <div class="quick-link-text">Google</div>
-                </a>
-                <a class="quick-link" data-url="https://www.youtube.com">
-                    <div class="quick-link-text">YouTube</div>
-                </a>
-                <a class="quick-link" data-url="https://www.github.com">
-                    <div class="quick-link-text">GitHub</div>
-                </a>
-                <a class="quick-link" data-url="https://www.twitter.com">
-                    <div class="quick-link-text">Twitter</div>
-                </a>
-                <a class="quick-link" data-url="https://www.reddit.com">
-                    <div class="quick-link-text">Reddit</div>
-                </a>
-                <a class="quick-link" data-url="https://www.wikipedia.org">
-                    <div class="quick-link-text">Wikipedia</div>
-                </a>
+            <div>
+                <span>Scramjet &copy; MW 2025</span>
             </div>
-        </div>
-
-        <iframe id="browserFrame" style="display: none;"></iframe>
-    </div>
-
-    <script src="/scram/scramjet.all.js"></script>
-    <script src="baremux/index.js"></script>
-    <script src="epoxy/index.js"></script>
-    <script src="register-sw.js"></script>
-    <script>
-        // Search function
-        function search(input, template) {
-            try {
-                return new URL(input).toString();
-            } catch (err) {}
-            try {
-                const url = new URL(`http://${input}`);
-                if (url.hostname.includes(".")) return url.toString();
-            } catch (err) {}
-            return template.replace("%s", encodeURIComponent(input));
-        }
-    </script>
-    <script>
-        const urlInput = document.getElementById('urlInput');
-        const homeSearchInput = document.getElementById('homeSearchInput');
-        const goBtn = document.getElementById('goBtn');
-        const backBtn = document.getElementById('backBtn');
-        const forwardBtn = document.getElementById('forwardBtn');
-        const reloadBtn = document.getElementById('reloadBtn');
-        const homeBtn = document.getElementById('homeBtn');
-        const browserFrame = document.getElementById('browserFrame');
-        const homeScreen = document.getElementById('homeScreen');
-        const loadingBar = document.getElementById('loadingBar');
-        const quickLinks = document.querySelectorAll('.quick-link');
-
-        let history = [];
-        let historyIndex = -1;
-
-        function normalizeUrl(input) {
-            input = input.trim();
-            
-            // Use the search function for proper URL handling
-            const searchEngine = "https://www.google.com/search?q=%s";
-            return search(input, searchEngine);
-        }
-
-        function showLoading() {
-            loadingBar.classList.add('active');
-        }
-
-        function hideLoading() {
-            loadingBar.classList.remove('active');
-            loadingBar.style.width = '0%';
-        }
-
-        function loadUrl(url) {
-            const normalizedUrl = normalizeUrl(url);
-            // Try common Scramjet paths - adjust this based on your server config
-            // Common options: '/service/', '/scramjet/', '/~/', '/proxy/'
-            const proxyUrl = '/service/' + normalizedUrl;
-            
-            showLoading();
-            homeScreen.style.display = 'none';
-            browserFrame.style.display = 'block';
-            browserFrame.src = proxyUrl;
-            urlInput.value = normalizedUrl;
-
-            if (historyIndex < history.length - 1) {
-                history = history.slice(0, historyIndex + 1);
-            }
-            history.push(normalizedUrl);
-            historyIndex++;
-            updateNavButtons();
-
-            setTimeout(hideLoading, 1000);
-        }
-
-        function showHome() {
-            homeScreen.style.display = 'flex';
-            browserFrame.style.display = 'none';
-            browserFrame.src = '';
-            urlInput.value = '';
-        }
-
-        function updateNavButtons() {
-            backBtn.disabled = historyIndex <= 0;
-            forwardBtn.disabled = historyIndex >= history.length - 1;
-        }
-
-        goBtn.addEventListener('click', () => {
-            if (urlInput.value) {
-                loadUrl(urlInput.value);
-            }
-        });
-
-        urlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loadUrl(urlInput.value);
-            }
-        });
-
-        homeSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loadUrl(homeSearchInput.value);
-                homeSearchInput.value = '';
-            }
-        });
-
-        backBtn.addEventListener('click', () => {
-            if (historyIndex > 0) {
-                historyIndex--;
-                const url = history[historyIndex];
-                browserFrame.src = '/service/' + url;
-                urlInput.value = url;
-                updateNavButtons();
-            }
-        });
-
-        forwardBtn.addEventListener('click', () => {
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                const url = history[historyIndex];
-                browserFrame.src = '~/' + url;
-                urlInput.value = url;
-                updateNavButtons();
-            }
-        });
-
-        reloadBtn.addEventListener('click', () => {
-            if (browserFrame.src) {
-                browserFrame.src = browserFrame.src;
-            }
-        });
-
-        homeBtn.addEventListener('click', showHome);
-
-        quickLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadUrl(link.dataset.url);
-            });
-        });
-
-        showHome();
-    </script>
-</body>
+        </footer>
+        <iframe style="display: none" id="sj-frame"></iframe>
+    </body>
 </html>
