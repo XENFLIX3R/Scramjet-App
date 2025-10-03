@@ -1,651 +1,499 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SR71 Browser</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SR71 — Private Browser</title>
+<script src="/scram/scramjet.all.js" defer></script>
+<script src="baremux/index.js" defer></script>
+<script src="epoxy/index.js" defer></script>
+<script src="register-sw.js" defer></script>
+<script src="search.js" defer></script>
+<style>
+  :root{
+    --bg-900:#030305;
+    --bg-800:#0b0b0d;
+    --panel: rgba(255,255,255,0.03);
+    --accent-1: #8b5cf6;
+    --accent-2: #9d4edd;
+    --muted: rgba(255,255,255,0.62);
+    --glass: rgba(255,255,255,0.03);
+    --radius-lg: 12px;
+    --radius-md: 10px;
+    --fs-base: 15px;
+  }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #000000;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: var(--bg-900);
+    color: #fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:hidden;
+    font-size:var(--fs-base);
+    display:flex;
+    flex-direction:column;
+  }
 
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(rgba(138, 43, 226, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(138, 43, 226, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 48px);
+    opacity:0.9;
+    pointer-events:none;
+    mix-blend-mode:overlay;
+  }
+  body::after{
+    content:"";
+    position:fixed; z-index:0;
+    left:50%; top:40%;
+    width:900px; height:900px; transform:translate(-50%,-40%);
+    background: radial-gradient(circle at center, rgba(139,92,246,0.14) 0%, rgba(157,78,221,0.06) 30%, transparent 50%);
+    filter: blur(64px);
+    pointer-events:none;
+    opacity:0.85;
+  }
 
-        .browser-header {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 14px 20px;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.15);
-        }
+  .browser-header{
+    position:relative; z-index:10;
+    display:flex; align-items:center; gap:14px;
+    padding:14px 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-bottom: 1px solid rgba(150,110,255,0.05);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 24px rgba(4,4,6,0.45);
+  }
 
-        .brand {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #8a2be2, #9d4edd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-            margin-right: 8px;
-        }
+  .brand {
+    display:flex; align-items:center; gap:12px;
+    min-width:110px;
+  }
 
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-        }
+  .brand .logo {
+    width:40px; height:40px;
+    border-radius:12px;
+    display:grid; place-items:center;
+    background: linear-gradient(135deg,var(--accent-1),var(--accent-2));
+    box-shadow: 0 6px 26px rgba(141,92,246,0.12), inset 0 -4px 18px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .brand .logotext{
+    font-weight:700; letter-spacing:1px;
+    font-size:16px; color:transparent;
+    background: linear-gradient(180deg,#fff, #dcd6ff 60%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    text-shadow: 0 2px 22px rgba(139,92,246,0.12);
+  }
 
-        .nav-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            background: rgba(20, 20, 20, 0.8);
-            color: #8a2be2;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
-        }
+  .controls { display:flex; gap:8px; align-items:center; }
 
-        .nav-btn:hover:not(:disabled) {
-            background: rgba(138, 43, 226, 0.2);
-            border-color: #8a2be2;
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
-            transform: translateY(-2px);
-        }
+  .control {
+    width:42px; height:42px; border-radius:50%;
+    display:grid; place-items:center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+    border:1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 6px 18px rgba(8,8,12,0.45);
+    cursor:pointer; transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    color:var(--muted);
+  }
+  .control:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(141,92,246,0.08); border-color:rgba(139,92,246,0.08); color: #fff; }
+  .control[disabled]{ opacity:.35; cursor:not-allowed; transform:none; box-shadow:none }
 
-        .nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
+  .address {
+    flex:1;
+    margin: 0 12px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border:1px solid rgba(139,92,246,0.06);
+    padding:9px 14px;
+    border-radius:14px;
+    box-shadow: inset 0 -6px 18px rgba(0,0,0,0.55);
+    transition:box-shadow .18s ease, border-color .18s ease;
+  }
+  .address:focus-within { border-color: rgba(139,92,246,0.22); box-shadow: 0 8px 36px rgba(139,92,246,0.06); }
 
-        .url-bar-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 10px;
-            padding: 10px 18px;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
+  .address .lock {
+    width:38px; display:flex; align-items:center; gap:12px; color:var(--muted);
+    font-weight:600; font-size:13px;
+    padding-left:2px;
+  }
 
-        .url-bar-container:focus-within {
-            border-color: #8a2be2;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
-        }
+  .address input {
+    background:transparent; border:0; outline:0; color:#fff;
+    font-size:14px; width:100%;
+  }
+  .address input::placeholder{ color: rgba(255,255,255,0.30) }
 
-        .lock-icon {
-            color: #8a2be2;
-            font-size: 14px;
-            font-weight: 600;
-        }
+  .go {
+    border-radius:10px; padding:8px 12px;
+    background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+    color:#fff; font-weight:700; font-size:13px; border:none; cursor:pointer;
+    box-shadow: 0 6px 22px rgba(139,92,246,0.14);
+    transition: transform .16s ease;
+  }
+  .go:hover { transform:translateY(-2px) }
 
-        .url-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 14px;
-            outline: none;
-        }
+  .content {
+    display:flex; flex:1; position:relative; z-index:2; height: calc(100vh - 74px);
+    overflow:hidden;
+  }
 
-        .url-input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
+  .left-panel{
+    width:100%;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-start;
+    padding:60px 28px;
+    gap:26px;
+    overflow:auto;
+  }
 
-        .go-btn {
-            background: linear-gradient(135deg, #8a2be2, #9d4edd);
-            color: #ffffff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
+  .hero {
+    text-align:center; max-width:920px; width:100%;
+  }
+  .hero h1{
+    font-size:56px; line-height:1.02; letter-spacing:-1px;
+    font-weight:800; margin-bottom:12px;
+    background: linear-gradient(90deg, #fff, #dcd6ff 30%, rgba(155,120,255,0.9));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    text-transform:uppercase;
+    filter: drop-shadow(0 6px 28px rgba(140,85,240,0.06));
+  }
+  .hero p.lead{ color: rgba(255,255,255,0.62); font-size:16px; margin-bottom:18px }
 
-        .go-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.5);
-        }
+  .hero .underline{
+    width:140px; height:4px; border-radius:3px; margin: 8px auto 24px;
+    background: linear-gradient(90deg, transparent, var(--accent-1), transparent);
+  }
 
-        .menu-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            background: rgba(20, 20, 20, 0.8);
-            color: #8a2be2;
-            cursor: pointer;
-            font-size: 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
+  .home-search{
+    width:640px; max-width:92%;
+    display:flex; gap:12px; justify-content:center; align-items:center;
+  }
+  .home-search input{
+    flex:1; padding:16px 18px; border-radius:999px; border:1px solid rgba(139,92,246,0.06);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    color:#fff; outline:0; font-size:15px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5) inset;
+  }
+  .home-search input:focus {
+    border-color: rgba(139,92,246,0.22);
+    box-shadow: 0 8px 36px rgba(139,92,246,0.06);
+  }
+  .home-actions{ display:flex; gap:12px; justify-content:center; margin-top:18px }
+  .btn{
+    padding:12px 20px; border-radius:10px; border:none; cursor:pointer; font-weight:700;
+    background: transparent; color:#fff; font-size:14px;
+    border:1px solid rgba(255,255,255,0.04);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  .btn.primary {
+    background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+    box-shadow: 0 8px 32px rgba(139,92,246,0.12);
+  }
+  .btn.primary:hover { transform:translateY(-2px); box-shadow: 0 10px 36px rgba(139,92,246,0.18); }
+  .btn.secondary {
+    background: rgba(255,255,255,0.02);
+    border:1px solid rgba(139,92,246,0.06);
+  }
+  .btn.secondary:hover { background: rgba(255,255,255,0.04); border-color: rgba(139,92,246,0.12); }
 
-        .menu-btn:hover {
-            background: rgba(138, 43, 226, 0.2);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
-        }
+  .features {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:18px; max-width:1000px; margin-top:36px; width:100%;
+  }
+  .feature {
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border-radius:12px; padding:20px; text-align:center;
+    border:1px solid rgba(139,92,246,0.04);
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .feature:hover{ transform:translateY(-6px); box-shadow: 0 14px 42px rgba(139,92,246,0.06); border-color: rgba(139,92,246,0.08) }
+  .feature svg{ width:36px;height:36px; margin-bottom:12px; opacity:0.95; stroke: currentColor; color: var(--muted); }
+  .feature h4{ font-size:13px; font-weight:700; letter-spacing:0.6px; color:#fff; text-transform: uppercase; }
 
-        .iframe-container {
-            flex: 1;
-            background: #000;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
+  .loading {
+    position: absolute; top: 0; left: 0; right: 0;
+    height:3px; background: linear-gradient(90deg,var(--accent-1),var(--accent-2)); width:0%;
+    transition: width .36s ease, opacity .36s ease;
+    box-shadow: 0 6px 18px rgba(139,92,246,0.18);
+    z-index: 100;
+  }
+  
+  .frame {
+    flex:1; border:0; background:#fff; width:100%; display: none;
+  }
+  .frame.active { display: block; }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff;
-        }
-
-        .loading-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #8a2be2, #9d4edd, #c77dff);
-            width: 0%;
-            transition: width 0.3s;
-            z-index: 1000;
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.8);
-        }
-
-        .loading-bar.active {
-            animation: loading 2s ease-in-out infinite;
-        }
-
-        @keyframes loading {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-
-        .home-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding-top: 120px;
-            height: 100%;
-            background: #000000;
-            position: relative;
-            overflow-y: auto;
-        }
-
-        .home-screen::before {
-            content: '';
-            position: absolute;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(138, 43, 226, 0.2) 0%, transparent 70%);
-            filter: blur(80px);
-            pointer-events: none;
-            animation: pulse 8s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
-            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.3; }
-        }
-
-        .hero-section {
-            text-align: center;
-            max-width: 900px;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 80px;
-        }
-
-        .hero-title {
-            font-size: 72px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            line-height: 1.1;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-        }
-
-        .hero-subtitle {
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 16px;
-            font-weight: 400;
-        }
-
-        .hero-underline {
-            width: 120px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
-            margin: 0 auto 32px;
-            border-radius: 2px;
-        }
-
-        .hero-description {
-            font-size: 18px;
-            color: rgba(255, 255, 255, 0.5);
-            line-height: 1.6;
-            max-width: 700px;
-            margin: 0 auto 48px;
-        }
-
-        .home-search {
-            width: 600px;
-            max-width: 90%;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 48px;
-        }
-
-        .home-search input {
-            width: 100%;
-            padding: 18px 28px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 50px;
-            font-size: 16px;
-            background: rgba(15, 15, 15, 0.8);
-            color: #ffffff;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        .home-search input:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 4px 32px rgba(139, 92, 246, 0.3);
-            background: rgba(20, 20, 20, 0.9);
-        }
-
-        .home-search input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-bottom: 80px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .cta-btn {
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .cta-btn-primary {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            color: #ffffff;
-            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
-        }
-
-        .cta-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.5);
-        }
-
-        .cta-btn-secondary {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid rgba(138, 43, 226, 0.5);
-        }
-
-        .cta-btn-secondary:hover {
-            background: rgba(138, 43, 226, 0.1);
-            border-color: #8b5cf6;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            max-width: 1000px;
-            padding: 0 24px;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 60px;
-        }
-
-        .feature-card {
-            background: rgba(15, 15, 15, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 32px 24px;
-            border-radius: 16px;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-4px);
-            background: rgba(20, 20, 20, 0.8);
-            border-color: rgba(138, 43, 226, 0.4);
-            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2);
-        }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: rgba(138, 43, 226, 0.1);
-            color: #8b5cf6;
-            font-size: 24px;
-        }
-
-        .feature-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-            }
-            50% {
-                text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
-            }
-        }
-
-        .brand {
-            animation: glow 3s ease-in-out infinite;
-        }
-    </style>
-    <script src="/scram/scramjet.all.js" defer></script>
-    <script src="baremux/index.js" defer></script>
-    <script src="epoxy/index.js" defer></script>
-    <script src="register-sw.js" defer></script>
-    <script src="search.js" defer></script>
+  @media (max-width:1100px){
+    .hero h1{ font-size:40px }
+  }
+</style>
 </head>
 <body>
-    <div class="browser-header">
-        <div class="brand">SR71</div>
-        
-        <div class="nav-buttons">
-            <button class="nav-btn" id="backBtn" title="Back" disabled>←</button>
-            <button class="nav-btn" id="forwardBtn" title="Forward" disabled>→</button>
-            <button class="nav-btn" id="reloadBtn" title="Reload">↻</button>
-            <button class="nav-btn" id="homeBtn" title="Home">⌂</button>
-        </div>
-        
-        <div class="url-bar-container">
-            <span class="lock-icon">HTTPS</span>
-            <input 
-                type="text" 
-                class="url-input" 
-                id="urlInput" 
-                placeholder="Search or enter website address"
-            />
-            <button class="go-btn" id="goBtn">Go</button>
-        </div>
-        
-        <button class="menu-btn" title="Menu">⋮</button>
+
+  <header class="browser-header">
+    <div class="brand">
+      <div class="logo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="2" width="20" height="20" rx="5" fill="white" opacity="0.06"></rect>
+          <path d="M6 17 L10 7 L14 17" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.98"/>
+        </svg>
+      </div>
+      <div class="logotext">SR71</div>
     </div>
 
-    <div class="iframe-container">
-        <div class="loading-bar" id="loadingBar"></div>
-        
-        <div class="home-screen" id="homeScreen">
-            <div class="hero-section">
-                <h1 class="hero-title">Unleash True Freedom</h1>
-                <div class="hero-underline"></div>
-                <p class="hero-subtitle">With SR71 Browser</p>
-                <p class="hero-description">
-                    SR71 provides high-performance, secure web browsing with cutting-edge proxy technology.
-                    Browse freely and privately without restrictions.
-                </p>
-            </div>
+    <div class="controls">
+      <button class="control" id="backBtn" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18 L8 12 L15 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
 
-            <div class="home-search">
-                <input 
-                    type="text" 
-                    placeholder="Search the web or enter URL..." 
-                    id="homeSearchInput"
-                />
-            </div>
+      <button class="control" id="forwardBtn" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6 L16 12 L9 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
 
-            <div class="cta-buttons">
-                <button class="cta-btn cta-btn-primary" onclick="document.getElementById('homeSearchInput').focus()">
-                    <span>→</span> Get Started
-                </button>
-                <button class="cta-btn cta-btn-secondary" onclick="alert('SR71 Browser - Advanced web proxy technology for unrestricted browsing')">
-                    <span>≡</span> Learn More
-                </button>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-title">Blazing Speed</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <div class="feature-title">Secure Proxy</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <div class="feature-title">Global Access</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <div class="feature-title">Fast Execution</div>
-                </div>
-            </div>
-        </div>
+      <button class="control" id="reloadBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M21 12a9 9 0 1 1-2.6-6.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 6v6h-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
 
-        <iframe id="sj-frame" style="display: none;"></iframe>
+      <button class="control" id="homeBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M3 11.5 L12 4 L21 11.5 V20 a1 1 0 0 1 -1 1 H4 a1 1 0 0 1 -1-1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
 
-    <script defer>
-        // This runs after all deferred scripts load
-        const urlInput = document.getElementById('urlInput');
-        const homeSearchInput = document.getElementById('homeSearchInput');
-        const goBtn = document.getElementById('goBtn');
-        const backBtn = document.getElementById('backBtn');
-        const forwardBtn = document.getElementById('forwardBtn');
-        const reloadBtn = document.getElementById('reloadBtn');
-        const homeBtn = document.getElementById('homeBtn');
-        const browserFrame = document.getElementById('sj-frame');
-        const homeScreen = document.getElementById('homeScreen');
-        const loadingBar = document.getElementById('loadingBar');
-        const quickLinks = document.querySelectorAll('.quick-link');
-        const searchEngine = "https://www.google.com/search?q=%s";
+    <div class="address">
+      <div class="lock">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <input id="urlInput" type="text" autocomplete="off" placeholder="Search or enter website address"/>
+      <button class="go" id="goBtn">Go</button>
+    </div>
 
-        let history = [];
-        let historyIndex = -1;
-        let scramjet;
-        let connection;
+    <button class="control" id="menuBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
 
-        // Initialize when page loads
-        window.addEventListener('load', async () => {
-            const { ScramjetController } = $scramjetLoadController();
-            scramjet = new ScramjetController({
-                files: {
-                    wasm: '/scram/scramjet.wasm.wasm',
-                    all: '/scram/scramjet.all.js',
-                    sync: '/scram/scramjet.sync.js',
-                },
-            });
-            scramjet.init();
-            connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-        });
+  <main class="content">
+    <div class="loading" id="loadingBar"></div>
+    
+    <section class="left-panel" id="homeScreen">
+      <div class="hero">
+        <h1>Unleash True Freedom</h1>
+        <div class="underline"></div>
+        <p class="lead">SR71 — secure, private, and performance-focused browser technology designed for demanding users.</p>
 
-        function showLoading() {
-            loadingBar.classList.add('active');
-        }
+        <div class="home-search">
+          <input id="homeSearchInput" placeholder="Search the web or paste a URL..." />
+          <button class="btn primary" id="homeGo">Search</button>
+        </div>
 
-        function hideLoading() {
-            loadingBar.classList.remove('active');
-            loadingBar.style.width = '0%';
-        }
+        <div class="home-actions">
+          <button class="btn primary" onclick="document.getElementById('homeSearchInput').focus()">Get Started</button>
+          <button class="btn secondary" onclick="alert('SR71 — Built with Scramjet proxy technology for unrestricted browsing.')">Learn more</button>
+        </div>
 
-        async function loadUrl(input) {
-            try {
-                await registerSW();
-            } catch (err) {
-                console.error("Failed to register service worker:", err);
-                alert("Failed to register service worker.");
-                return;
-            }
+        <div class="features">
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 12a9 9 0 1 0 18 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 8 L13.5 11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h4>Blazing speed</h4>
+          </div>
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 7v-2a5 5 0 0 1 10 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <h4>Secure proxy</h4>
+          </div>
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <h4>Global access</h4>
+          </div>
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M12 5v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <h4>Fast execution</h4>
+          </div>
+        </div>
+      </div>
+    </section>
 
-            const url = search(input, searchEngine);
-            
-            showLoading();
-            homeScreen.style.display = 'none';
-            browserFrame.style.display = 'block';
+    <iframe id="sj-frame" class="frame"></iframe>
+  </main>
 
-            let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-            
-            if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
-                await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-            }
+<script defer>
+  const urlInput = document.getElementById('urlInput');
+  const homeSearchInput = document.getElementById('homeSearchInput');
+  const goBtn = document.getElementById('goBtn');
+  const homeGo = document.getElementById('homeGo');
+  const backBtn = document.getElementById('backBtn');
+  const forwardBtn = document.getElementById('forwardBtn');
+  const reloadBtn = document.getElementById('reloadBtn');
+  const homeBtn = document.getElementById('homeBtn');
+  const browserFrame = document.getElementById('sj-frame');
+  const homeScreen = document.getElementById('homeScreen');
+  const loadingBar = document.getElementById('loadingBar');
+  const searchEngine = "https://www.google.com/search?q=%s";
 
-            const sjEncode = scramjet.encodeUrl.bind(scramjet);
-            browserFrame.src = sjEncode(url);
-            urlInput.value = url;
+  let history = [];
+  let historyIndex = -1;
+  let scramjet, connection;
 
-            if (historyIndex < history.length - 1) {
-                history = history.slice(0, historyIndex + 1);
-            }
-            history.push(url);
-            historyIndex++;
-            updateNavButtons();
+  window.addEventListener('load', async () => {
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+      files: {
+        wasm: '/scram/scramjet.wasm.wasm',
+        all: '/scram/scramjet.all.js',
+        sync: '/scram/scramjet.sync.js',
+      },
+    });
+    scramjet.init();
+    connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+  });
 
-            setTimeout(hideLoading, 1000);
-        }
+  function startLoading(){
+    loadingBar.style.opacity = '1';
+    loadingBar.style.width = '6%';
+    setTimeout(()=> loadingBar.style.width = '48%', 160);
+    setTimeout(()=> loadingBar.style.width = '78%', 720);
+  }
+  
+  function finishLoading(){
+    loadingBar.style.width = '100%';
+    setTimeout(()=> {
+      loadingBar.style.opacity = '0';
+      loadingBar.style.width = '0%';
+    }, 260);
+  }
 
-        function showHome() {
-            homeScreen.style.display = 'flex';
-            browserFrame.style.display = 'none';
-            browserFrame.src = '';
-            urlInput.value = '';
-        }
+  async function loadUrl(input) {
+    try {
+      await registerSW();
+    } catch (err) {
+      console.error("Failed to register service worker:", err);
+      alert("Failed to register service worker.");
+      return;
+    }
 
-        function updateNavButtons() {
-            backBtn.disabled = historyIndex <= 0;
-            forwardBtn.disabled = historyIndex >= history.length - 1;
-        }
+    const url = search(input, searchEngine);
+    
+    startLoading();
+    homeScreen.style.display = 'none';
+    browserFrame.classList.add('active');
 
-        goBtn.addEventListener('click', () => {
-            if (urlInput.value) {
-                loadUrl(urlInput.value);
-            }
-        });
+    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+    
+    if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
+      await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
 
-        urlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loadUrl(urlInput.value);
-            }
-        });
+    const sjEncode = scramjet.encodeUrl.bind(scramjet);
+    browserFrame.src = sjEncode(url);
+    urlInput.value = url;
 
-        homeSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loadUrl(homeSearchInput.value);
-                homeSearchInput.value = '';
-            }
-        });
+    if (historyIndex < history.length - 1) {
+      history = history.slice(0, historyIndex + 1);
+    }
+    history.push(url);
+    historyIndex++;
+    updateNavButtons();
 
-        backBtn.addEventListener('click', () => {
-            if (historyIndex > 0) {
-                historyIndex--;
-                const url = history[historyIndex];
-                const sjEncode = scramjet.encodeUrl.bind(scramjet);
-                browserFrame.src = sjEncode(url);
-                urlInput.value = url;
-                updateNavButtons();
-            }
-        });
+    setTimeout(finishLoading, 1000);
+  }
 
-        forwardBtn.addEventListener('click', () => {
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                const url = history[historyIndex];
-                const sjEncode = scramjet.encodeUrl.bind(scramjet);
-                browserFrame.src = sjEncode(url);
-                urlInput.value = url;
-                updateNavButtons();
-            }
-        });
+  function showHome() {
+    homeScreen.style.display = 'flex';
+    browserFrame.classList.remove('active');
+    browserFrame.src = '';
+    urlInput.value = '';
+  }
 
-        reloadBtn.addEventListener('click', () => {
-            if (browserFrame.src) {
-                browserFrame.src = browserFrame.src;
-            }
-        });
+  function updateNavButtons() {
+    backBtn.disabled = historyIndex <= 0;
+    forwardBtn.disabled = historyIndex >= history.length - 1;
+  }
 
-        homeBtn.addEventListener('click', showHome);
+  goBtn.addEventListener('click', () => {
+    if (urlInput.value) loadUrl(urlInput.value);
+  });
 
-        quickLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadUrl(link.dataset.url);
-            });
-        });
-    </script>
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') loadUrl(urlInput.value);
+  });
+
+  homeGo.addEventListener('click', () => {
+    if(homeSearchInput.value) {
+      loadUrl(homeSearchInput.value);
+      homeSearchInput.value = '';
+    }
+  });
+
+  homeSearchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      loadUrl(homeSearchInput.value);
+      homeSearchInput.value = '';
+    }
+  });
+
+  backBtn.addEventListener('click', () => {
+    if (historyIndex > 0) {
+      historyIndex--;
+      const url = history[historyIndex];
+      const sjEncode = scramjet.encodeUrl.bind(scramjet);
+      browserFrame.src = sjEncode(url);
+      urlInput.value = url;
+      updateNavButtons();
+    }
+  });
+
+  forwardBtn.addEventListener('click', () => {
+    if (historyIndex < history.length - 1) {
+      historyIndex++;
+      const url = history[historyIndex];
+      const sjEncode = scramjet.encodeUrl.bind(scramjet);
+      browserFrame.src = sjEncode(url);
+      urlInput.value = url;
+      updateNavButtons();
+    }
+  });
+
+  reloadBtn.addEventListener('click', () => {
+    if (browserFrame.src) {
+      browserFrame.src = browserFrame.src;
+    }
+  });
+
+  homeBtn.addEventListener('click', showHome);
+
+  showHome();
+</script>
 </body>
 </html>
