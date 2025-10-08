@@ -27,20 +27,6 @@
             flex-direction: column;
         }
 
-        /* Purple glow at bottom */
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -50%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
         /* Animated particles background */
         .particles {
             position: fixed;
@@ -77,12 +63,14 @@
         }
 
         .screen {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 1;
             display: none;
             opacity: 0;
-            width: 100%;
-            height: 100vh;
         }
 
         .screen.active {
@@ -133,7 +121,7 @@
 
         .lock-icon {
             position: absolute;
-            left: 1.1rem;
+            left: 1.3rem;
             width: 18px;
             height: 18px;
             color: rgba(255, 255, 255, 0.4);
@@ -142,7 +130,7 @@
 
         .eye-icon {
             position: absolute;
-            right: 1.1rem;
+            right: 1.3rem;
             width: 20px;
             height: 20px;
             color: rgba(255, 255, 255, 0.4);
@@ -158,11 +146,11 @@
         input[type="password"],
         input[type="text"].password-input {
             width: 450px;
-            padding: 1rem 3.5rem 1rem 3.2rem;
+            padding: 1rem 3.5rem;
             font-size: 1rem;
             background: rgba(20, 20, 30, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            border-radius: 50px;
             color: white;
             outline: none;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -209,13 +197,17 @@
         .browser-header {
             position: relative;
             z-index: 10;
-            display: flex;
+            display: none;
             align-items: center;
             gap: 14px;
             padding: 14px 20px;
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
             border-bottom: 1px solid rgba(150, 110, 255, 0.05);
             backdrop-filter: blur(6px);
+        }
+
+        .browser-header.show {
+            display: flex;
         }
 
         .brand {
@@ -285,7 +277,7 @@
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.01));
             border: 1px solid rgba(139, 92, 246, 0.06);
             padding: 9px 14px;
-            border-radius: 14px;
+            border-radius: 50px;
             transition: box-shadow .18s ease, border-color .18s ease;
         }
 
@@ -336,7 +328,7 @@
             flex: 1;
             position: relative;
             z-index: 2;
-            height: calc(100vh - 74px);
+            height: 100vh;
             overflow: hidden;
         }
 
@@ -345,8 +337,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding-top: 15vh;
+            justify-content: center;
             gap: 2.5rem;
         }
 
@@ -369,7 +360,7 @@
             gap: 12px;
             background: rgba(20, 20, 30, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
+            border-radius: 50px;
             padding: 1rem 1.5rem;
             backdrop-filter: blur(10px);
             transition: border-color .3s ease;
@@ -442,6 +433,7 @@
             border: 0;
             background: #fff;
             width: 100%;
+            height: 100%;
             display: none;
         }
 
@@ -489,7 +481,7 @@
     </div>
 
     <div id="browser" class="screen">
-        <header class="browser-header">
+        <header class="browser-header" id="browserHeader">
             <div class="brand">
                 <div class="logo">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
@@ -599,6 +591,7 @@
         const homeBtn = document.getElementById('homeBtn');
         const browserFrame = document.getElementById('sj-frame');
         const homeScreen = document.getElementById('homeScreen');
+        const browserHeader = document.getElementById('browserHeader');
         const loadingBar = document.getElementById('loadingBar');
         const searchEngine = "https://www.google.com/search?q=%s";
 
@@ -752,6 +745,7 @@
 
             startLoading();
             homeScreen.style.display = 'none';
+            browserHeader.classList.add('show');
             browserFrame.classList.add('active');
 
             if (connection) {
@@ -783,6 +777,7 @@
 
         function showHome() {
             homeScreen.style.display = 'flex';
+            browserHeader.classList.remove('show');
             browserFrame.classList.remove('active');
             browserFrame.src = '';
             urlInput.value = '';
