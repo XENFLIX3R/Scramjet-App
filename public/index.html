@@ -1,499 +1,853 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SR71 — Private Browser</title>
-<script src="/scram/scramjet.all.js" defer></script>
-<script src="baremux/index.js" defer></script>
-<script src="epoxy/index.js" defer></script>
-<script src="register-sw.js" defer></script>
-<script src="search.js" defer></script>
-<style>
-  :root{
-    --bg-900:#030305;
-    --bg-800:#0b0b0d;
-    --panel: rgba(255,255,255,0.03);
-    --accent-1: #8b5cf6;
-    --accent-2: #9d4edd;
-    --muted: rgba(255,255,255,0.62);
-    --glass: rgba(255,255,255,0.03);
-    --radius-lg: 12px;
-    --radius-md: 10px;
-    --fs-base: 15px;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SR71 V3 — Private Browser</title>
+    <script src="/scram/scramjet.all.js" defer></script>
+    <script src="baremux/index.js" defer></script>
+    <script src="epoxy/index.js" defer></script>
+    <script src="register-sw.js" defer></script>
+    <script src="search.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: var(--bg-900);
-    color: #fff;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    overflow:hidden;
-    font-size:var(--fs-base);
-    display:flex;
-    flex-direction:column;
-  }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            background: #000000;
+            color: white;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
 
-  body::before{
-    content:"";
-    position:fixed; inset:0; z-index:0;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 48px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 48px);
-    opacity:0.9;
-    pointer-events:none;
-    mix-blend-mode:overlay;
-  }
-  body::after{
-    content:"";
-    position:fixed; z-index:0;
-    left:50%; top:40%;
-    width:900px; height:900px; transform:translate(-50%,-40%);
-    background: radial-gradient(circle at center, rgba(139,92,246,0.14) 0%, rgba(157,78,221,0.06) 30%, transparent 50%);
-    filter: blur(64px);
-    pointer-events:none;
-    opacity:0.85;
-  }
+        /* Purple glow at bottom */
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
 
-  .browser-header{
-    position:relative; z-index:10;
-    display:flex; align-items:center; gap:14px;
-    padding:14px 20px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-    border-bottom: 1px solid rgba(150,110,255,0.05);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 6px 24px rgba(4,4,6,0.45);
-  }
+        /* Animated particles background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
 
-  .brand {
-    display:flex; align-items:center; gap:12px;
-    min-width:110px;
-  }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: fall linear infinite;
+        }
 
-  .brand .logo {
-    width:40px; height:40px;
-    border-radius:12px;
-    display:grid; place-items:center;
-    background: linear-gradient(135deg,var(--accent-1),var(--accent-2));
-    box-shadow: 0 6px 26px rgba(141,92,246,0.12), inset 0 -4px 18px rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.04);
-  }
-  .brand .logotext{
-    font-weight:700; letter-spacing:1px;
-    font-size:16px; color:transparent;
-    background: linear-gradient(180deg,#fff, #dcd6ff 60%);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-    text-shadow: 0 2px 22px rgba(139,92,246,0.12);
-  }
+        @keyframes fall {
+            0% {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
 
-  .controls { display:flex; gap:8px; align-items:center; }
+        .screen {
+            position: relative;
+            z-index: 1;
+            display: none;
+            opacity: 0;
+            width: 100%;
+            height: 100vh;
+        }
 
-  .control {
-    width:42px; height:42px; border-radius:50%;
-    display:grid; place-items:center;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
-    border:1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 6px 18px rgba(8,8,12,0.45);
-    cursor:pointer; transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-    color:var(--muted);
-  }
-  .control:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(141,92,246,0.08); border-color:rgba(139,92,246,0.08); color: #fff; }
-  .control[disabled]{ opacity:.35; cursor:not-allowed; transform:none; box-shadow:none }
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: smoothFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
 
-  .address {
-    flex:1;
-    margin: 0 12px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
-    border:1px solid rgba(139,92,246,0.06);
-    padding:9px 14px;
-    border-radius:14px;
-    box-shadow: inset 0 -6px 18px rgba(0,0,0,0.55);
-    transition:box-shadow .18s ease, border-color .18s ease;
-  }
-  .address:focus-within { border-color: rgba(139,92,246,0.22); box-shadow: 0 8px 36px rgba(139,92,246,0.06); }
+        @keyframes smoothFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
 
-  .address .lock {
-    width:38px; display:flex; align-items:center; gap:12px; color:var(--muted);
-    font-weight:600; font-size:13px;
-    padding-left:2px;
-  }
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin: 0;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+        }
 
-  .address input {
-    background:transparent; border:0; outline:0; color:#fff;
-    font-size:14px; width:100%;
-  }
-  .address input::placeholder{ color: rgba(255,255,255,0.30) }
+        .access-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
 
-  .go {
-    border-radius:10px; padding:8px 12px;
-    background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
-    color:#fff; font-weight:700; font-size:13px; border:none; cursor:pointer;
-    box-shadow: 0 6px 22px rgba(139,92,246,0.14);
-    transition: transform .16s ease;
-  }
-  .go:hover { transform:translateY(-2px) }
+        label {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
 
-  .content {
-    display:flex; flex:1; position:relative; z-index:2; height: calc(100vh - 74px);
-    overflow:hidden;
-  }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-  .left-panel{
-    width:100%;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:flex-start;
-    padding:60px 28px;
-    gap:26px;
-    overflow:auto;
-  }
+        .lock-icon {
+            position: absolute;
+            left: 1.1rem;
+            width: 18px;
+            height: 18px;
+            color: rgba(255, 255, 255, 0.4);
+            z-index: 2;
+        }
 
-  .hero {
-    text-align:center; max-width:920px; width:100%;
-  }
-  .hero h1{
-    font-size:56px; line-height:1.02; letter-spacing:-1px;
-    font-weight:800; margin-bottom:12px;
-    background: linear-gradient(90deg, #fff, #dcd6ff 30%, rgba(155,120,255,0.9));
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    text-transform:uppercase;
-    filter: drop-shadow(0 6px 28px rgba(140,85,240,0.06));
-  }
-  .hero p.lead{ color: rgba(255,255,255,0.62); font-size:16px; margin-bottom:18px }
+        .eye-icon {
+            position: absolute;
+            right: 1.1rem;
+            width: 20px;
+            height: 20px;
+            color: rgba(255, 255, 255, 0.4);
+            z-index: 2;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
 
-  .hero .underline{
-    width:140px; height:4px; border-radius:3px; margin: 8px auto 24px;
-    background: linear-gradient(90deg, transparent, var(--accent-1), transparent);
-  }
+        .eye-icon:hover {
+            color: rgba(255, 255, 255, 0.7);
+        }
 
-  .home-search{
-    width:640px; max-width:92%;
-    display:flex; gap:12px; justify-content:center; align-items:center;
-  }
-  .home-search input{
-    flex:1; padding:16px 18px; border-radius:999px; border:1px solid rgba(139,92,246,0.06);
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    color:#fff; outline:0; font-size:15px;
-    box-shadow: 0 6px 28px rgba(0,0,0,0.5) inset;
-  }
-  .home-search input:focus {
-    border-color: rgba(139,92,246,0.22);
-    box-shadow: 0 8px 36px rgba(139,92,246,0.06);
-  }
-  .home-actions{ display:flex; gap:12px; justify-content:center; margin-top:18px }
-  .btn{
-    padding:12px 20px; border-radius:10px; border:none; cursor:pointer; font-weight:700;
-    background: transparent; color:#fff; font-size:14px;
-    border:1px solid rgba(255,255,255,0.04);
-    transition: transform .16s ease, box-shadow .16s ease;
-  }
-  .btn.primary {
-    background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
-    box-shadow: 0 8px 32px rgba(139,92,246,0.12);
-  }
-  .btn.primary:hover { transform:translateY(-2px); box-shadow: 0 10px 36px rgba(139,92,246,0.18); }
-  .btn.secondary {
-    background: rgba(255,255,255,0.02);
-    border:1px solid rgba(139,92,246,0.06);
-  }
-  .btn.secondary:hover { background: rgba(255,255,255,0.04); border-color: rgba(139,92,246,0.12); }
+        input[type="password"],
+        input[type="text"].password-input {
+            width: 450px;
+            padding: 1rem 3.5rem 1rem 3.2rem;
+            font-size: 1rem;
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(10px);
+        }
 
-  .features {
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:18px; max-width:1000px; margin-top:36px; width:100%;
-  }
-  .feature {
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
-    border-radius:12px; padding:20px; text-align:center;
-    border:1px solid rgba(139,92,246,0.04);
-    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-  }
-  .feature:hover{ transform:translateY(-6px); box-shadow: 0 14px 42px rgba(139,92,246,0.06); border-color: rgba(139,92,246,0.08) }
-  .feature svg{ width:36px;height:36px; margin-bottom:12px; opacity:0.95; stroke: currentColor; color: var(--muted); }
-  .feature h4{ font-size:13px; font-weight:700; letter-spacing:0.6px; color:#fff; text-transform: uppercase; }
+        input[type="password"]:focus,
+        input[type="text"].password-input:focus {
+            background: rgba(30, 30, 45, 0.7);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+        }
 
-  .loading {
-    position: absolute; top: 0; left: 0; right: 0;
-    height:3px; background: linear-gradient(90deg,var(--accent-1),var(--accent-2)); width:0%;
-    transition: width .36s ease, opacity .36s ease;
-    box-shadow: 0 6px 18px rgba(139,92,246,0.18);
-    z-index: 100;
-  }
-  
-  .frame {
-    flex:1; border:0; background:#fff; width:100%; display: none;
-  }
-  .frame.active { display: block; }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
 
-  @media (max-width:1100px){
-    .hero h1{ font-size:40px }
-  }
-</style>
+        .error {
+            border-color: rgba(255, 80, 80, 0.4) !important;
+            animation: shake 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-12px); }
+            75% { transform: translateX(12px); }
+        }
+
+        .success {
+            border-color: rgba(80, 255, 150, 0.5) !important;
+            box-shadow: 0 0 25px rgba(80, 255, 150, 0.15);
+        }
+
+        /* Browser screen */
+        #browser {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .browser-header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+            border-bottom: 1px solid rgba(150, 110, 255, 0.05);
+            backdrop-filter: blur(6px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 110px;
+        }
+
+        .brand .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #8b5cf6, #9d4edd);
+            box-shadow: 0 6px 26px rgba(141, 92, 246, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .brand .logotext {
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .control {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+            color: rgba(255, 255, 255, 0.62);
+        }
+
+        .control:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(141, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.08);
+            color: #fff;
+        }
+
+        .control[disabled] {
+            opacity: .35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .address {
+            flex: 1;
+            margin: 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(139, 92, 246, 0.06);
+            padding: 9px 14px;
+            border-radius: 14px;
+            transition: box-shadow .18s ease, border-color .18s ease;
+        }
+
+        .address:focus-within {
+            border-color: rgba(139, 92, 246, 0.22);
+            box-shadow: 0 8px 36px rgba(139, 92, 246, 0.06);
+        }
+
+        .address .lock {
+            width: 38px;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.62);
+        }
+
+        .address input {
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: #fff;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .address input::placeholder {
+            color: rgba(255, 255, 255, 0.30);
+        }
+
+        .go {
+            border-radius: 10px;
+            padding: 8px 12px;
+            background: linear-gradient(90deg, #8b5cf6, #9d4edd);
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 22px rgba(139, 92, 246, 0.14);
+            transition: transform .16s ease;
+        }
+
+        .go:hover {
+            transform: translateY(-2px);
+        }
+
+        .content {
+            display: flex;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            height: calc(100vh - 74px);
+            overflow: hidden;
+        }
+
+        .home-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15vh;
+            gap: 2.5rem;
+        }
+
+        .browser-title {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+        }
+
+        .browser-title .purple {
+            color: #a855f7;
+            text-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
+        }
+
+        .search-bar-wrapper {
+            width: 450px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 1rem 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: border-color .3s ease;
+        }
+
+        .search-bar-wrapper:focus-within {
+            border-color: rgba(139, 92, 246, 0.22);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .search-bar-wrapper input {
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: #fff;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .search-icon {
+            width: 20px;
+            height: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            flex-shrink: 0;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 220px);
+            gap: 1.5rem;
+        }
+
+        .shortcut {
+            height: 120px;
+            background: rgba(20, 20, 30, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .shortcut:hover {
+            background: rgba(30, 30, 45, 0.6);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 2rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.05em;
+        }
+
+        .frame {
+            flex: 1;
+            border: 0;
+            background: #fff;
+            width: 100%;
+            display: none;
+        }
+
+        .frame.active {
+            display: block;
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #8b5cf6, #9d4edd);
+            width: 0%;
+            transition: width .36s ease, opacity .36s ease;
+            box-shadow: 0 6px 18px rgba(139, 92, 246, 0.18);
+            z-index: 100;
+        }
+    </style>
 </head>
 <body>
+    <!-- Particle system -->
+    <div class="particles" id="particles"></div>
 
-  <header class="browser-header">
-    <div class="brand">
-      <div class="logo">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="5" fill="white" opacity="0.06"></rect>
-          <path d="M6 17 L10 7 L14 17" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.98"/>
-        </svg>
-      </div>
-      <div class="logotext">SR71</div>
+    <div id="welcome" class="screen active">
+        <h1>Welcome to SR71 V3</h1>
     </div>
 
-    <div class="controls">
-      <button class="control" id="backBtn" disabled>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M15 18 L8 12 L15 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-
-      <button class="control" id="forwardBtn" disabled>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M9 6 L16 12 L9 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-
-      <button class="control" id="reloadBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M21 12a9 9 0 1 1-2.6-6.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M21 6v6h-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-
-      <button class="control" id="homeBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M3 11.5 L12 4 L21 11.5 V20 a1 1 0 0 1 -1 1 H4 a1 1 0 0 1 -1-1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+    <div id="access" class="screen">
+        <div class="access-container">
+            <label for="accessCode">Access Code</label>
+            <div class="input-wrapper">
+                <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input type="password" id="accessCode" placeholder="ACCESS1" autocomplete="off" class="password-input">
+                <svg class="eye-icon" id="togglePassword" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </div>
+        </div>
     </div>
 
-    <div class="address">
-      <div class="lock">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/>
-          <path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <input id="urlInput" type="text" autocomplete="off" placeholder="Search or enter website address"/>
-      <button class="go" id="goBtn">Go</button>
+    <div id="browser" class="screen">
+        <header class="browser-header">
+            <div class="brand">
+                <div class="logo">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <rect x="2" y="2" width="20" height="20" rx="5" fill="white" opacity="0.06"></rect>
+                        <path d="M6 17 L10 7 L14 17" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.98"/>
+                    </svg>
+                </div>
+                <div class="logotext">SR71</div>
+            </div>
+
+            <div class="controls">
+                <button class="control" id="backBtn" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18 L8 12 L15 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+                <button class="control" id="forwardBtn" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 6 L16 12 L9 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+                <button class="control" id="reloadBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 12a9 9 0 1 1-2.6-6.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 6v6h-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+                <button class="control" id="homeBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 11.5 L12 4 L21 11.5 V20 a1 1 0 0 1 -1 1 H4 a1 1 0 0 1 -1-1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="address">
+                <div class="lock">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <input id="urlInput" type="text" autocomplete="off" placeholder="Search or enter website address"/>
+                <button class="go" id="goBtn">Go</button>
+            </div>
+
+            <button class="control" id="menuBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </header>
+
+        <main class="content">
+            <div class="loading" id="loadingBar"></div>
+            
+            <section class="home-content" id="homeScreen">
+                <h1 class="browser-title">Start <span class="purple">Browsing</span>.</h1>
+                
+                <div class="search-bar-wrapper">
+                    <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <input id="homeSearchInput" placeholder="Search the web or paste a URL..." />
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                </div>
+
+                <div class="shortcuts-grid">
+                    <div class="shortcut" data-url="https://google.com">Google</div>
+                    <div class="shortcut" data-url="https://tiktok.com">TikTok</div>
+                    <div class="shortcut" data-url="https://geforce.com">GeForce</div>
+                    <div class="shortcut" data-url="https://espn.com">ESPN</div>
+                    <div class="shortcut" data-url="https://github.com">GitHub</div>
+                    <div class="shortcut" data-url="https://chat.openai.com">ChatGPT</div>
+                </div>
+
+                <div class="footer-text">Managed by Diego Castaneda</div>
+            </section>
+
+            <iframe id="sj-frame" class="frame"></iframe>
+        </main>
     </div>
 
-    <button class="control" id="menuBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-    </button>
-  </header>
+    <script>
+        const welcomeScreen = document.getElementById('welcome');
+        const accessScreen = document.getElementById('access');
+        const browserScreen = document.getElementById('browser');
+        const accessInput = document.getElementById('accessCode');
+        const togglePassword = document.getElementById('togglePassword');
+        const particlesContainer = document.getElementById('particles');
+        const CORRECT_CODE = 'Access2025';
 
-  <main class="content">
-    <div class="loading" id="loadingBar"></div>
-    
-    <section class="left-panel" id="homeScreen">
-      <div class="hero">
-        <h1>Privacy right at your fingertips.</h1>
-        <div class="underline"></div>
-        <p class="lead">SR71 — secure, private, and performance-focused browser technology designed for demanding users.</p>
+        const urlInput = document.getElementById('urlInput');
+        const homeSearchInput = document.getElementById('homeSearchInput');
+        const goBtn = document.getElementById('goBtn');
+        const backBtn = document.getElementById('backBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const browserFrame = document.getElementById('sj-frame');
+        const homeScreen = document.getElementById('homeScreen');
+        const loadingBar = document.getElementById('loadingBar');
+        const searchEngine = "https://www.google.com/search?q=%s";
 
-        <div class="home-search">
-          <input id="homeSearchInput" placeholder="Search the web or paste a URL..." />
-          <button class="btn primary" id="homeGo">Search</button>
-        </div>
+        let history = [];
+        let historyIndex = -1;
+        let scramjet, connection;
 
-        <div class="home-actions">
-          <button class="btn primary" onclick="document.getElementById('homeSearchInput').focus()">Get Started</button>
-          <button class="btn secondary" onclick="alert('SR71 — Built with Scramjet proxy technology for unrestricted browsing.')">Learn more</button>
-        </div>
+        // Create particles
+        function createParticles() {
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 2 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                
+                const duration = Math.random() * 12 + 8;
+                particle.style.animationDuration = duration + 's';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
 
-        <div class="features">
-          <div class="feature">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M3 12a9 9 0 1 0 18 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M10 8 L13.5 11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h4>Blazing speed</h4>
-          </div>
-          <div class="feature">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M7 7v-2a5 5 0 0 1 10 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <h4>Secure proxy</h4>
-          </div>
-          <div class="feature">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <h4>Global access</h4>
-          </div>
-          <div class="feature">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M12 5v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-            <h4>Fast execution</h4>
-          </div>
-        </div>
-      </div>
-    </section>
+        createParticles();
 
-    <iframe id="sj-frame" class="frame"></iframe>
-  </main>
+        // Initialize Scramjet
+        window.addEventListener('load', async () => {
+            if (typeof $scramjetLoadController !== 'undefined') {
+                const { ScramjetController } = $scramjetLoadController();
+                scramjet = new ScramjetController({
+                    files: {
+                        wasm: '/scram/scramjet.wasm.wasm',
+                        all: '/scram/scramjet.all.js',
+                        sync: '/scram/scramjet.sync.js',
+                    },
+                });
+                scramjet.init();
+            }
+            
+            if (typeof BareMux !== 'undefined') {
+                connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+            }
+        });
 
-<script defer>
-  const urlInput = document.getElementById('urlInput');
-  const homeSearchInput = document.getElementById('homeSearchInput');
-  const goBtn = document.getElementById('goBtn');
-  const homeGo = document.getElementById('homeGo');
-  const backBtn = document.getElementById('backBtn');
-  const forwardBtn = document.getElementById('forwardBtn');
-  const reloadBtn = document.getElementById('reloadBtn');
-  const homeBtn = document.getElementById('homeBtn');
-  const browserFrame = document.getElementById('sj-frame');
-  const homeScreen = document.getElementById('homeScreen');
-  const loadingBar = document.getElementById('loadingBar');
-  const searchEngine = "https://www.google.com/search?q=%s";
+        // Toggle password visibility
+        togglePassword.addEventListener('click', () => {
+            const type = accessInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            accessInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                togglePassword.innerHTML = `
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                    <line x1="2" x2="22" y1="2" y2="22"/>
+                `;
+            } else {
+                togglePassword.innerHTML = `
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                `;
+            }
+        });
 
-  let history = [];
-  let historyIndex = -1;
-  let scramjet, connection;
+        // Show access screen after 2 seconds
+        setTimeout(() => {
+            welcomeScreen.style.animation = 'smoothFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
+            
+            setTimeout(() => {
+                welcomeScreen.classList.remove('active');
+                accessScreen.classList.add('active');
+                
+                setTimeout(() => {
+                    accessInput.focus();
+                }, 400);
+            }, 800);
+        }, 2000);
 
-  window.addEventListener('load', async () => {
-    const { ScramjetController } = $scramjetLoadController();
-    scramjet = new ScramjetController({
-      files: {
-        wasm: '/scram/scramjet.wasm.wasm',
-        all: '/scram/scramjet.all.js',
-        sync: '/scram/scramjet.sync.js',
-      },
-    });
-    scramjet.init();
-    connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-  });
+        // Check access code
+        accessInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                checkCode();
+            }
+        });
 
-  function startLoading(){
-    loadingBar.style.opacity = '1';
-    loadingBar.style.width = '6%';
-    setTimeout(()=> loadingBar.style.width = '48%', 160);
-    setTimeout(()=> loadingBar.style.width = '78%', 720);
-  }
-  
-  function finishLoading(){
-    loadingBar.style.width = '100%';
-    setTimeout(()=> {
-      loadingBar.style.opacity = '0';
-      loadingBar.style.width = '0%';
-    }, 260);
-  }
+        accessInput.addEventListener('input', () => {
+            accessInput.classList.remove('error');
+            accessInput.classList.remove('success');
+        });
 
-  async function loadUrl(input) {
-    try {
-      await registerSW();
-    } catch (err) {
-      console.error("Failed to register service worker:", err);
-      alert("Failed to register service worker.");
-      return;
-    }
+        function checkCode() {
+            const enteredCode = accessInput.value;
+            
+            if (enteredCode === CORRECT_CODE) {
+                console.log('✅ Access Granted - Code Correct!');
+                accessInput.classList.add('success');
+                
+                setTimeout(() => {
+                    accessScreen.style.animation = 'smoothFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
+                    
+                    setTimeout(() => {
+                        accessScreen.classList.remove('active');
+                        browserScreen.classList.add('active');
+                    }, 800);
+                }, 500);
+            } else {
+                console.log('❌ Access Denied - Incorrect Code');
+                accessInput.classList.add('error');
+                setTimeout(() => {
+                    accessInput.value = '';
+                }, 400);
+            }
+        }
 
-    const url = search(input, searchEngine);
-    
-    startLoading();
-    homeScreen.style.display = 'none';
-    browserFrame.classList.add('active');
+        // Proxy functions
+        function startLoading() {
+            loadingBar.style.opacity = '1';
+            loadingBar.style.width = '6%';
+            setTimeout(() => loadingBar.style.width = '48%', 160);
+            setTimeout(() => loadingBar.style.width = '78%', 720);
+        }
 
-    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    
-    if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
-      await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
+        function finishLoading() {
+            loadingBar.style.width = '100%';
+            setTimeout(() => {
+                loadingBar.style.opacity = '0';
+                loadingBar.style.width = '0%';
+            }, 260);
+        }
 
-    const sjEncode = scramjet.encodeUrl.bind(scramjet);
-    browserFrame.src = sjEncode(url);
-    urlInput.value = url;
+        async function loadUrl(input) {
+            if (typeof registerSW !== 'undefined') {
+                try {
+                    await registerSW();
+                } catch (err) {
+                    console.error("Failed to register service worker:", err);
+                    alert("Failed to register service worker.");
+                    return;
+                }
+            }
 
-    if (historyIndex < history.length - 1) {
-      history = history.slice(0, historyIndex + 1);
-    }
-    history.push(url);
-    historyIndex++;
-    updateNavButtons();
+            const url = (typeof search !== 'undefined') ? search(input, searchEngine) : 
+                        (input.includes('.') || input.startsWith('http')) ? 
+                        (input.startsWith('http') ? input : 'https://' + input) : 
+                        'https://www.google.com/search?q=' + encodeURIComponent(input);
 
-    setTimeout(finishLoading, 1000);
-  }
+            startLoading();
+            homeScreen.style.display = 'none';
+            browserFrame.classList.add('active');
 
-  function showHome() {
-    homeScreen.style.display = 'flex';
-    browserFrame.classList.remove('active');
-    browserFrame.src = '';
-    urlInput.value = '';
-  }
+            if (connection) {
+                let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+                
+                if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
+                    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+                }
+            }
 
-  function updateNavButtons() {
-    backBtn.disabled = historyIndex <= 0;
-    forwardBtn.disabled = historyIndex >= history.length - 1;
-  }
+            if (scramjet) {
+                const sjEncode = scramjet.encodeUrl.bind(scramjet);
+                browserFrame.src = sjEncode(url);
+            } else {
+                browserFrame.src = url;
+            }
+            
+            urlInput.value = url;
 
-  goBtn.addEventListener('click', () => {
-    if (urlInput.value) loadUrl(urlInput.value);
-  });
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(url);
+            historyIndex++;
+            updateNavButtons();
 
-  urlInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') loadUrl(urlInput.value);
-  });
+            setTimeout(finishLoading, 1000);
+        }
 
-  homeGo.addEventListener('click', () => {
-    if(homeSearchInput.value) {
-      loadUrl(homeSearchInput.value);
-      homeSearchInput.value = '';
-    }
-  });
+        function showHome() {
+            homeScreen.style.display = 'flex';
+            browserFrame.classList.remove('active');
+            browserFrame.src = '';
+            urlInput.value = '';
+        }
 
-  homeSearchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      loadUrl(homeSearchInput.value);
-      homeSearchInput.value = '';
-    }
-  });
+        function updateNavButtons() {
+            backBtn.disabled = historyIndex <= 0;
+            forwardBtn.disabled = historyIndex >= history.length - 1;
+        }
 
-  backBtn.addEventListener('click', () => {
-    if (historyIndex > 0) {
-      historyIndex--;
-      const url = history[historyIndex];
-      const sjEncode = scramjet.encodeUrl.bind(scramjet);
-      browserFrame.src = sjEncode(url);
-      urlInput.value = url;
-      updateNavButtons();
-    }
-  });
+        // Event listeners for browser controls
+        goBtn.addEventListener('click', () => {
+            if (urlInput.value) loadUrl(urlInput.value);
+        });
 
-  forwardBtn.addEventListener('click', () => {
-    if (historyIndex < history.length - 1) {
-      historyIndex++;
-      const url = history[historyIndex];
-      const sjEncode = scramjet.encodeUrl.bind(scramjet);
-      browserFrame.src = sjEncode(url);
-      urlInput.value = url;
-      updateNavButtons();
-    }
-  });
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loadUrl(urlInput.value);
+        });
 
-  reloadBtn.addEventListener('click', () => {
-    if (browserFrame.src) {
-      browserFrame.src = browserFrame.src;
-    }
-  });
+        homeSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && homeSearchInput.value) {
+                loadUrl(homeSearchInput.value);
+                homeSearchInput.value = '';
+            }
+        });
 
-  homeBtn.addEventListener('click', showHome);
+        backBtn.addEventListener('click', () => {
+            if (historyIndex > 0 && scramjet) {
+                historyIndex--;
+                const url = history[historyIndex];
+                const sjEncode = scramjet.encodeUrl.bind(scramjet);
+                browserFrame.src = sjEncode(url);
+                urlInput.value = url;
+                updateNavButtons();
+            }
+        });
 
-  showHome();
-</script>
+        forwardBtn.addEventListener('click', () => {
+            if (historyIndex < history.length - 1 && scramjet) {
+                historyIndex++;
+                const url = history[historyIndex];
+                const sjEncode = scramjet.encodeUrl.bind(scramjet);
+                browserFrame.src = sjEncode(url);
+                urlInput.value = url;
+                updateNavButtons();
+            }
+        });
+
+        reloadBtn.addEventListener('click', () => {
+            if (browserFrame.src) {
+                browserFrame.src = browserFrame.src;
+            }
+        });
+
+        homeBtn.addEventListener('click', showHome);
+
+        // Shortcut clicks
+        document.querySelectorAll('.shortcut').forEach(shortcut => {
+            shortcut.addEventListener('click', () => {
+                const url = shortcut.getAttribute('data-url');
+                if (url) {
+                    loadUrl(url);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
