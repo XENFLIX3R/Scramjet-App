@@ -71,6 +71,7 @@
             z-index: 1;
             display: none;
             opacity: 0;
+            pointer-events: none;
         }
 
         .screen.active {
@@ -79,6 +80,7 @@
             align-items: center;
             justify-content: center;
             animation: smoothFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: auto;
         }
 
         @keyframes smoothFadeIn {
@@ -274,8 +276,13 @@
             flex: 1;
             position: relative;
             z-index: 2;
-            height: 100vh;
+            width: 100%;
+            height: calc(100vh - 72px);
             overflow: hidden;
+        }
+
+        #browser.active .content {
+            height: 100%;
         }
 
         .home-content {
@@ -376,11 +383,13 @@
         }
 
         .frame {
-            flex: 1;
-            border: 0;
-            background: #fff;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            border: 0;
+            background: #fff;
             display: none;
         }
 
@@ -547,7 +556,13 @@
         });
 
         // Toggle password visibility
+        togglePassword.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
         togglePassword.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             const type = accessInput.getAttribute('type') === 'password' ? 'text' : 'password';
             accessInput.setAttribute('type', type);
@@ -565,10 +580,13 @@
                     <circle cx="12" cy="12" r="3"/>
                 `;
             }
+            
+            // Refocus the input
+            setTimeout(() => accessInput.focus(), 10);
         });
 
-        // Show access screen after 2 seconds
-        setTimeout(() => {
+        // Show access screen after clicking anywhere on welcome screen
+        welcomeScreen.addEventListener('click', () => {
             welcomeScreen.style.animation = 'smoothFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
             
             setTimeout(() => {
@@ -579,7 +597,7 @@
                     accessInput.focus();
                 }, 400);
             }, 800);
-        }, 2000);
+        });
 
         // Check access code
         accessInput.addEventListener('keyup', (e) => {
