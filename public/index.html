@@ -237,15 +237,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
             color: rgba(255, 255, 255, 0.5);
-        }
-
-        .sidebar-icon:hover {
-            background: rgba(138, 43, 226, 0.2);
-            border-color: rgba(138, 43, 226, 0.4);
-            color: #fff;
-            transform: translateX(5px);
         }
 
         .sidebar-icon.active {
@@ -411,25 +403,35 @@
         }
 
         .shortcut {
-            height: 120px;
+            height: 140px;
             background: rgba(20, 20, 30, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            gap: 12px;
+            font-size: 1rem;
             font-weight: 300;
             letter-spacing: 0.05em;
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            padding: 15px;
         }
 
         .shortcut:hover {
             background: rgba(30, 30, 45, 0.6);
             border-color: rgba(255, 255, 255, 0.15);
             transform: translateY(-2px);
+        }
+
+        .shortcut img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
         }
 
         .footer-text {
@@ -521,7 +523,7 @@
             padding: 15px;
         }
 
-        .game-item {
+        .game-item, .app-item {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -534,20 +536,19 @@
             transition: all 0.3s ease;
         }
 
-        .game-item:hover {
+        .game-item:hover, .app-item:hover {
             background: rgba(138, 43, 226, 0.1);
             border-color: rgba(138, 43, 226, 0.3);
-            transform: translateX(5px);
         }
 
-        .game-item img {
+        .game-item img, .app-item img {
             width: 50px;
             height: 50px;
             border-radius: 8px;
             object-fit: cover;
         }
 
-        .game-item span {
+        .game-item span, .app-item span {
             font-size: 14px;
             font-weight: 500;
         }
@@ -651,6 +652,14 @@
                     <path d="M2 12h20"/>
                 </svg>
             </div>
+            <div class="sidebar-icon" id="appsIcon" onclick="showApps()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="7" x="3" y="3" rx="1"/>
+                    <rect width="7" height="7" x="14" y="3" rx="1"/>
+                    <rect width="7" height="7" x="14" y="14" rx="1"/>
+                    <rect width="7" height="7" x="3" y="14" rx="1"/>
+                </svg>
+            </div>
             <div class="sidebar-icon" id="gamesIcon" onclick="showGames()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="6" x2="10" y1="12" y2="12"/>
@@ -660,6 +669,15 @@
                     <rect width="20" height="12" x="2" y="6" rx="2"/>
                 </svg>
             </div>
+        </div>
+
+        <!-- Apps Panel -->
+        <div class="games-panel" id="appsPanel">
+            <div class="games-header">
+                <h2>Apps</h2>
+                <input type="text" class="games-search" id="appsSearch" placeholder="Search apps..." oninput="filterApps()">
+            </div>
+            <div class="games-list" id="appsList"></div>
         </div>
 
         <!-- Games Panel -->
@@ -723,13 +741,31 @@
                     </svg>
                 </div>
 
-                <div class="shortcuts-grid">
-                    <div class="shortcut" data-url="https://google.com">Google</div>
-                    <div class="shortcut" data-url="https://tiktok.com">TikTok</div>
-                    <div class="shortcut" data-url="https://geforce.com">GeForce</div>
-                    <div class="shortcut" data-url="https://espn.com">ESPN</div>
-                    <div class="shortcut" data-url="https://github.com">GitHub</div>
-                    <div class="shortcut" data-url="https://chat.openai.com">ChatGPT</div>
+                <div class="shortcuts-grid" id="shortcutsGrid">
+                    <div class="shortcut" data-url="https://google.com">
+                        <img src="https://gointospace.app/assets/imgs/sb/Google.webp" alt="Google">
+                        <span>Google</span>
+                    </div>
+                    <div class="shortcut" data-url="https://tiktok.com">
+                        <img src="https://gointospace.app/assets/imgs/sb/TikTok.webp" alt="TikTok">
+                        <span>TikTok</span>
+                    </div>
+                    <div class="shortcut" data-url="https://geforce.com">
+                        <img src="https://gointospace.app/assets/imgs/sb/Geforce_Now.webp" alt="GeForce">
+                        <span>GeForce</span>
+                    </div>
+                    <div class="shortcut" data-url="https://espn.com">
+                        <img src="https://gointospace.app/assets/imgs/sb/ESPN.webp" alt="ESPN">
+                        <span>ESPN</span>
+                    </div>
+                    <div class="shortcut" data-url="https://github.com">
+                        <img src="https://gointospace.app/assets/imgs/sb/GitHub.webp" alt="GitHub">
+                        <span>GitHub</span>
+                    </div>
+                    <div class="shortcut" data-url="https://chat.openai.com">
+                        <img src="https://gointospace.app/assets/imgs/sb/ChatGPT.webp" alt="ChatGPT">
+                        <span>ChatGPT</span>
+                    </div>
                 </div>
 
                 <div class="footer-text">Managed by Diego Castaneda</div>
@@ -758,6 +794,9 @@
         const loadingBar = document.getElementById('loadingBar');
         const searchEngine = "https://www.google.com/search?q=%s";
 
+        const appsPanel = document.getElementById('appsPanel');
+        const appsList = document.getElementById('appsList');
+        const appsSearch = document.getElementById('appsSearch');
         const gamesPanel = document.getElementById('gamesPanel');
         const gamesList = document.getElementById('gamesList');
         const gamesSearch = document.getElementById('gamesSearch');
@@ -769,11 +808,29 @@
         let scramjet, connection;
         let games = [];
         let allGames = [];
+        let apps = [];
+        let allApps = [];
         let currentGame = null;
 
         const ZONES_URL = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json";
         const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
         const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
+
+        // Apps data
+        const appsData = [
+            { name: 'TikTok', url: 'https://tiktok.com', img: 'https://gointospace.app/assets/imgs/sb/TikTok.webp' },
+            { name: 'YouTube', url: 'https://youtube.com', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png' },
+            { name: 'Coolmath Games', url: 'https://coolmathgames.com', img: 'https://www.coolmathgames.com/sites/default/files/public_games/37723/featured.png' },
+            { name: 'Discord', url: 'https://discord.com', img: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png' },
+            { name: 'Spotify', url: 'https://spotify.com', img: 'https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png' },
+            { name: 'Netflix', url: 'https://netflix.com', img: 'https://images.ctfassets.net/4cd45et68cgf/7LrExJ6PAj6MSIPkDyCO86/542b1dfabbf3959908f69be546879952/Netflix-Brand-Logo.png' },
+            { name: 'Reddit', url: 'https://reddit.com', img: 'https://www.redditinc.com/assets/images/site/reddit-logo.png' },
+            { name: 'Twitter/X', url: 'https://x.com', img: 'https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023_%28white%29.png' },
+            { name: 'Instagram', url: 'https://instagram.com', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png' },
+            { name: 'Twitch', url: 'https://twitch.tv', img: 'https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png' },
+            { name: 'Amazon', url: 'https://amazon.com', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png' },
+            { name: 'Facebook', url: 'https://facebook.com', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png' }
+        ];
 
         // Create particles
         function createParticles() {
@@ -816,9 +873,45 @@
                 connection = new BareMux.BareMuxConnection("/baremux/worker.js");
             }
 
-            // Load games
             loadGames();
+            loadApps();
         });
+
+        // Load apps
+        function loadApps() {
+            allApps = appsData;
+            apps = allApps;
+            displayApps();
+        }
+
+        // Display apps
+        function displayApps() {
+            appsList.innerHTML = '';
+            
+            apps.forEach(app => {
+                const appItem = document.createElement('div');
+                appItem.className = 'app-item';
+                appItem.onclick = () => loadUrl(app.url);
+                
+                appItem.innerHTML = `
+                    <img src="${app.img}" alt="${app.name}" onerror="this.src='https://via.placeholder.com/50'">
+                    <span>${app.name}</span>
+                `;
+                
+                appsList.appendChild(appItem);
+            });
+
+            if (apps.length === 0) {
+                appsList.innerHTML = '<p style="padding: 20px; color: rgba(255,255,255,0.5);">No apps found</p>';
+            }
+        }
+
+        // Filter apps
+        function filterApps() {
+            const query = appsSearch.value.toLowerCase();
+            apps = allApps.filter(app => app.name.toLowerCase().includes(query));
+            displayApps();
+        }
 
         // Load games from GN-Math
         async function loadGames() {
@@ -937,7 +1030,19 @@
         // Show proxy
         function showProxy() {
             document.getElementById('proxyIcon').classList.add('active');
+            document.getElementById('appsIcon').classList.remove('active');
             document.getElementById('gamesIcon').classList.remove('active');
+            appsPanel.classList.remove('active');
+            gamesPanel.classList.remove('active');
+            gameViewer.classList.remove('active');
+        }
+
+        // Show apps
+        function showApps() {
+            document.getElementById('appsIcon').classList.add('active');
+            document.getElementById('proxyIcon').classList.remove('active');
+            document.getElementById('gamesIcon').classList.remove('active');
+            appsPanel.classList.add('active');
             gamesPanel.classList.remove('active');
             gameViewer.classList.remove('active');
         }
@@ -946,7 +1051,9 @@
         function showGames() {
             document.getElementById('gamesIcon').classList.add('active');
             document.getElementById('proxyIcon').classList.remove('active');
+            document.getElementById('appsIcon').classList.remove('active');
             gamesPanel.classList.add('active');
+            appsPanel.classList.remove('active');
             gameViewer.classList.remove('active');
         }
 
@@ -1051,12 +1158,10 @@
                     await registerSW();
                 } catch (err) {
                     console.error("Failed to register service worker:", err);
-                    alert("Failed to register service worker.");
-                    return;
                 }
             }
 
-            const url = (typeof search !== 'undefined') ? search(input, searchEngine) : 
+            let url = (typeof search !== 'undefined') ? search(input, searchEngine) : 
                         (input.includes('.') || input.startsWith('http')) ? 
                         (input.startsWith('http') ? input : 'https://' + input) : 
                         'https://www.google.com/search?q=' + encodeURIComponent(input);
@@ -1069,16 +1174,19 @@
             if (connection) {
                 let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
                 
-                if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
-                    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-                }
+                try {
+                    if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
+                        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+                    }
+                } catch(e) {}
             }
 
             if (scramjet) {
                 const sjEncode = scramjet.encodeUrl.bind(scramjet);
                 browserFrame.src = sjEncode(url);
             } else {
-                browserFrame.src = url;
+                // Fallback to direct proxy URL
+                browserFrame.src = 'https://sr71-workshop.onrender.com/scramjet/' + url;
             }
             
             urlInput.value = url;
