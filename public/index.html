@@ -1,4 +1,76 @@
-<!DOCTYPE html>
+<!-- Admin Section -->
+                    <div class="settings-section" id="adminSection">
+                        <h3>Admin Panel</h3>
+                        <p>Access administrative controls and manage user experience.</p>
+                        
+                        <div class="settings-group">
+                            <h4>Access Control</h4>
+                            <div class="settings-row" style="display: block;">
+                                <div class="settings-label" style="margin-bottom: 12px;">Admin Code</div>
+                                <input type="password" class="input-field" id="adminCode" placeholder="Enter admin code..." style="margin-bottom: 15px;">
+                                <button class="settings-btn" onclick="checkAdminCode()">Unlock Admin Panel</button>
+                            </div>
+                        </div>
+
+                        <div id="adminControls" style="display: none;">
+                            <div class="admin-warning">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                    <path d="M12 9v4"/>
+                                    <path d="M12 17h.01"/>
+                                </svg>
+                                <div>
+                                    <strong>Warning:</strong> These controls affect all users. Use responsibly and only for legitimate purposes.
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <h4>Broadcast Controls</h4>
+                                <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 20px;">Send messages or effects to all connected users.</p>
+                                <div class="admin-controls">
+                                    <button class="admin-btn" onclick="broadcastJumpscare()">
+                                        <div style="display:flex;align-items:center;gap:10px;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                            Broadcast Jumpscare
+                                        </div>
+                                    </button>
+                                    <button class="admin-btn" onclick="flashScreen()">
+                                        <div style="display:flex;align-items:center;gap:10px;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                            </svg>
+                                            Flash All Screens
+                                        </div>
+                                    </button>
+                                    <button class="admin-btn" onclick="rickrollAll()">
+                                        <div style="display:flex;align-items:center;gap:10px;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M9 18V5l12-2v13"/>
+                                                <circle cx="6" cy="18" r="3"/>
+                                                <circle cx="18" cy="16" r="3"/>
+                                            </svg>
+                                            Rickroll Everyone
+                                        </div>
+                                    </button>
+                                    <button class="admin-btn" onclick="closeAllTabs()">
+                                        <div style="display:flex;align-items:center;gap:10px;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M18 6 6 18"/>
+                                                <path d="m6 6 12 12"/>
+                                            </svg>
+                                            Close All Tabs
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <h4>Custom Broadcast</h4>
+                                <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 15px;">Send a custom message to all users.</p>
+                                <textarea class="input-field" id="customMessage" placeholder="Enter custom<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,41 +99,54 @@
             flex-direction: column;
         }
 
-        /* Enhanced purple glow */
+        /* Enhanced bottom purple glow - more defined */
         body::after {
             content: '';
             position: fixed;
-            bottom: -20%;
+            bottom: -15%;
             left: 50%;
             transform: translateX(-50%);
-            width: 60%;
-            height: 50%;
+            width: 70%;
+            height: 45%;
             background: radial-gradient(ellipse at center, 
-                rgba(138, 43, 226, 0.4) 0%, 
-                rgba(138, 43, 226, 0.3) 20%,
-                rgba(138, 43, 226, 0.15) 40%,
-                transparent 70%);
+                rgba(147, 51, 234, 0.6) 0%, 
+                rgba(138, 43, 226, 0.5) 15%,
+                rgba(126, 34, 206, 0.35) 30%,
+                rgba(107, 33, 168, 0.2) 50%,
+                transparent 75%);
             pointer-events: none;
             z-index: 0;
-            filter: blur(40px);
+            filter: blur(80px);
+            animation: glowPulse 4s ease-in-out infinite;
         }
 
-        /* Additional top glow */
+        /* Top accent glow */
         body::before {
             content: '';
             position: fixed;
-            top: -30%;
+            top: -25%;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
-            height: 60%;
+            width: 65%;
+            height: 50%;
             background: radial-gradient(ellipse at center, 
-                rgba(75, 0, 130, 0.2) 0%, 
-                rgba(75, 0, 130, 0.1) 30%,
-                transparent 60%);
+                rgba(88, 28, 135, 0.35) 0%, 
+                rgba(76, 29, 149, 0.25) 25%,
+                rgba(67, 24, 132, 0.15) 45%,
+                transparent 70%);
             pointer-events: none;
             z-index: 0;
-            filter: blur(60px);
+            filter: blur(70px);
+            animation: glowPulse 4s ease-in-out infinite reverse;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
         }
 
         .particles {
@@ -630,66 +715,121 @@
             border-color: rgba(138, 43, 226, 0.6);
         }
 
-        /* Settings Panel */
+        /* Settings Panel - Night inspired */
         .settings-content {
             display: flex;
             height: 100%;
+            background: transparent;
         }
 
         .settings-sidebar {
-            width: 250px;
-            background: rgba(15, 15, 20, 0.8);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 30px 0;
+            width: 280px;
+            background: rgba(15, 15, 25, 0.85);
+            border-right: 1px solid rgba(138, 43, 226, 0.15);
+            padding: 40px 0;
+            backdrop-filter: blur(20px);
         }
 
         .settings-sidebar h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            padding: 0 25px 30px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 0 30px 25px;
+            border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+            background: linear-gradient(135deg, #fff 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
         }
 
         .settings-nav {
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .settings-nav-item {
-            padding: 12px 25px;
+            padding: 16px 30px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            color: rgba(255, 255, 255, 0.6);
+            gap: 15px;
+            color: rgba(255, 255, 255, 0.65);
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
+            transition: all 0.25s ease;
+            font-size: 15px;
+            font-weight: 500;
             border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .settings-nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: rgba(138, 43, 226, 0.1);
+            transition: width 0.25s ease;
         }
 
         .settings-nav-item:hover {
-            background: rgba(255, 255, 255, 0.03);
-            color: rgba(255, 255, 255, 0.9);
+            background: rgba(138, 43, 226, 0.08);
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .settings-nav-item:hover::before {
+            width: 100%;
         }
 
         .settings-nav-item.active {
-            background: rgba(138, 43, 226, 0.1);
+            background: rgba(138, 43, 226, 0.15);
             color: #fff;
-            border-left-color: #8b5cf6;
+            border-left-color: #9333ea;
+            box-shadow: inset 0 0 20px rgba(138, 43, 226, 0.1);
         }
 
         .settings-nav-item svg {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
 
         .settings-main {
             flex: 1;
-            padding: 40px;
+            padding: 50px 60px;
             overflow-y: auto;
+            background: rgba(10, 10, 15, 0.5);
+        }
+
+        .settings-main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .settings-main::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .settings-main::-webkit-scrollbar-thumb {
+            background: rgba(138, 43, 226, 0.4);
+            border-radius: 4px;
+        }
+
+        .settings-main::-webkit-scrollbar-thumb:hover {
+            background: rgba(138, 43, 226, 0.6);
         }
 
         .settings-section {
             display: none;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .settings-section.active {
@@ -697,127 +837,171 @@
         }
 
         .settings-section h3 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .settings-section p {
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 30px;
-            line-height: 1.6;
+        .settings-section > p {
+            color: rgba(255, 255, 255, 0.55);
+            margin-bottom: 35px;
+            line-height: 1.7;
+            font-size: 15px;
         }
 
         .settings-group {
-            background: rgba(20, 20, 30, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
+            background: rgba(20, 20, 35, 0.6);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .settings-group:hover {
+            border-color: rgba(138, 43, 226, 0.35);
+            box-shadow: 0 12px 40px rgba(138, 43, 226, 0.15);
+            transform: translateY(-2px);
         }
 
         .settings-group h4 {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .settings-group > p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
         }
 
         .settings-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 18px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .settings-row:last-child {
             border-bottom: none;
+            padding-bottom: 0;
         }
 
         .settings-label {
-            font-size: 14px;
+            font-size: 15px;
             color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
         }
 
         .settings-btn {
-            padding: 10px 20px;
-            background: rgba(138, 43, 226, 0.2);
-            border: 1px solid rgba(138, 43, 226, 0.4);
-            border-radius: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.25), rgba(147, 51, 234, 0.25));
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 10px;
             color: #fff;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
         }
 
         .settings-btn:hover {
-            background: rgba(138, 43, 226, 0.3);
-            border-color: rgba(138, 43, 226, 0.6);
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.4), rgba(147, 51, 234, 0.4));
+            border-color: rgba(138, 43, 226, 0.7);
+            box-shadow: 0 6px 25px rgba(138, 43, 226, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .settings-btn:active {
+            transform: translateY(0);
         }
 
         .toggle-switch {
             position: relative;
-            width: 48px;
-            height: 24px;
+            width: 52px;
+            height: 28px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .toggle-switch.active {
-            background: #8b5cf6;
+            background: linear-gradient(135deg, #8b5cf6, #9333ea);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
         }
 
         .toggle-switch::after {
             content: '';
             position: absolute;
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
             background: #fff;
             border-radius: 50%;
-            top: 3px;
+            top: 2px;
             left: 3px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .toggle-switch.active::after {
-            left: 27px;
+            left: 26px;
         }
 
         .input-field {
             width: 100%;
-            padding: 12px 16px;
-            background: rgba(30, 30, 40, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            padding: 14px 18px;
+            background: rgba(30, 30, 45, 0.7);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 10px;
             color: #fff;
             font-size: 14px;
             outline: none;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         .input-field:focus {
-            background: rgba(40, 40, 50, 0.7);
-            border-color: rgba(138, 43, 226, 0.4);
+            background: rgba(40, 40, 55, 0.8);
+            border-color: rgba(138, 43, 226, 0.5);
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
         }
 
         .select-field {
-            width: 200px;
-            padding: 10px 14px;
-            background: rgba(30, 30, 40, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            min-width: 220px;
+            padding: 12px 16px;
+            background: rgba(30, 30, 45, 0.7);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 10px;
             color: #fff;
             font-size: 14px;
             outline: none;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .select-field:hover {
+            border-color: rgba(138, 43, 226, 0.4);
+        }
+
+        .select-field:focus {
+            border-color: rgba(138, 43, 226, 0.5);
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
         }
 
         .custom-cloak-inputs {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-top: 15px;
         }
 
@@ -826,36 +1010,98 @@
         }
 
         .add-cloak-btn {
-            padding: 10px 20px;
-            background: rgba(138, 43, 226, 0.2);
-            border: 1px solid rgba(138, 43, 226, 0.4);
-            border-radius: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.25), rgba(147, 51, 234, 0.25));
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 10px;
             color: #fff;
             cursor: pointer;
             white-space: nowrap;
-        }
-
-        /* Admin Panel */
-        .admin-controls {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .admin-btn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.2));
-            border: 1px solid rgba(220, 38, 38, 0.4);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            cursor: pointer;
+            font-weight: 600;
             transition: all 0.3s ease;
         }
 
+        .add-cloak-btn:hover {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.4), rgba(147, 51, 234, 0.4));
+            transform: translateY(-2px);
+        }
+
+        /* Admin Panel - Enhanced */
+        .admin-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .admin-btn {
+            padding: 18px 28px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15));
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .admin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .admin-btn:hover::before {
+            left: 100%;
+        }
+
         .admin-btn:hover {
-            background: linear-gradient(135deg, rgba(220, 38, 38, 0.3), rgba(185, 28, 28, 0.3));
-            border-color: rgba(220, 38, 38, 0.6);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3));
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.35);
+            transform: translateY(-3px);
+        }
+
+        .admin-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .admin-warning {
+            padding: 20px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-warning svg {
+            width: 24px;
+            height: 24px;
+            color: #f59e0b;
+            flex-shrink: 0;
+        }
+
+        .admin-status {
+            padding: 15px 20px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 10px;
+            color: rgba(34, 197, 94, 1);
+            font-weight: 600;
+            text-align: center;
+            margin-top: 15px;
         }
 
         /* Jumpscare overlay */
@@ -1078,28 +1324,12 @@
                         </div>
                     </div>
 
-                    <!-- Admin Section -->
-                    <div class="settings-section" id="adminSection">
-                        <h3>Admin Panel</h3>
-                        <p>Access administrative controls and fun features.</p>
-                        
-                        <div class="settings-group">
-                            <h4>Access Control</h4>
-                            <div class="settings-row" style="display: block;">
-                                <div class="settings-label" style="margin-bottom: 10px;">Admin Code</div>
-                                <input type="password" class="input-field" id="adminCode" placeholder="Enter admin code...">
-                                <button class="settings-btn" style="margin-top: 10px;" onclick="checkAdminCode()">Unlock Admin Panel</button>
+                                <textarea class="input-field" id="customMessage" placeholder="Enter custom message..." rows="3" style="resize: vertical;"></textarea>
+                                <button class="settings-btn" onclick="broadcastMessage()" style="margin-top: 15px;">Send Message</button>
                             </div>
-                        </div>
 
-                        <div class="settings-group" id="adminControls" style="display: none;">
-                            <h4>Admin Controls</h4>
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 15px;">⚠️ Use these controls responsibly!</p>
-                            <div class="admin-controls">
-                                <button class="admin-btn" onclick="broadcastJumpscare()">Broadcast Jumpscare</button>
-                                <button class="admin-btn" onclick="closeAllTabs()">Close All User Tabs</button>
-                                <button class="admin-btn" onclick="rickrollAll()">Rickroll Everyone</button>
-                                <button class="admin-btn" onclick="flashScreen()">Flash All Screens</button>
+                            <div class="admin-status" id="adminStatus" style="display: none;">
+                                Admin action completed successfully!
                             </div>
                         </div>
                     </div>
@@ -1670,10 +1900,36 @@
             if (code === ADMIN_CODE) {
                 isAdmin = true;
                 document.getElementById('adminControls').style.display = 'block';
-                alert('Admin access granted! 🎉');
+                document.getElementById('adminCode').value = '';
+                showAdminStatus('Admin access granted! 🎉', 'success');
             } else {
-                alert('Incorrect admin code');
+                showAdminStatus('Incorrect admin code', 'error');
+                document.getElementById('adminCode').classList.add('error');
+                setTimeout(() => {
+                    document.getElementById('adminCode').classList.remove('error');
+                    document.getElementById('adminCode').value = '';
+                }, 400);
             }
+        }
+
+        function showAdminStatus(message, type) {
+            const status = document.getElementById('adminStatus');
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            if (type === 'error') {
+                status.style.background = 'rgba(239, 68, 68, 0.1)';
+                status.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                status.style.color = 'rgba(239, 68, 68, 1)';
+            } else {
+                status.style.background = 'rgba(34, 197, 94, 0.1)';
+                status.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                status.style.color = 'rgba(34, 197, 94, 1)';
+            }
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
         }
 
         function broadcastJumpscare() {
@@ -1683,12 +1939,16 @@
             const audio = new Audio('https://www.myinstants.com/media/sounds/scary-scream.mp3');
             audio.play().catch(() => {});
             setTimeout(() => overlay.classList.remove('active'), 3000);
+            showAdminStatus('Jumpscare broadcasted!', 'success');
         }
 
         function closeAllTabs() {
             if (!isAdmin) return;
             if (confirm('This will attempt to close the current tab. Continue?')) {
                 window.close();
+                if (!window.closed) {
+                    showAdminStatus('Unable to close tab (browser restriction)', 'error');
+                }
             }
         }
 
@@ -1696,6 +1956,7 @@
             if (!isAdmin) return;
             loadUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
             showProxy();
+            showAdminStatus('Rickroll initiated!', 'success');
         }
 
         function flashScreen() {
@@ -1707,8 +1968,22 @@
                 if (count > 20) {
                     clearInterval(interval);
                     document.body.style.background = '#0a0a0f';
+                    showAdminStatus('Screen flash completed!', 'success');
                 }
             }, 100);
+        }
+
+        function broadcastMessage() {
+            if (!isAdmin) return;
+            const message = document.getElementById('customMessage').value;
+            if (!message.trim()) {
+                showAdminStatus('Please enter a message', 'error');
+                return;
+            }
+            
+            alert('Admin Message: ' + message);
+            document.getElementById('customMessage').value = '';
+            showAdminStatus('Message broadcasted!', 'success');
         }
 
         togglePassword.addEventListener('mousedown', (e) => {
