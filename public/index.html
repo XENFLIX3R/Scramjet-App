@@ -10,289 +10,193 @@
     <script src="register-sw.js" defer></script>
     <script src="search.js" defer></script>
     <style>
-        :root{
-            --bg:#0a0a0f;
-            --fg:#fff;
-            --accent:#7c3aed;
-            --accent2:#a78bfa;
-            --glass:rgba(124,58,237,0.15);
-            --border:rgba(124,58,237,0.25);
-        }
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{
-            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-            height:100vh;
-            background:var(--bg);
-            color:var(--fg);
-            overflow:hidden;
-            position:relative;
-        }
-        body::after{
-            content:'';position:fixed;bottom:-20%;left:50%;transform:translateX(-50%);
-            width:60%;height:50%;
-            background:radial-gradient(ellipse,var(--accent)0%,transparent 70%);
-            pointer-events:none;z-index:0;filter:blur(40px);
-        }
-        body::before{
-            content:'';position:fixed;top:-30%;left:50%;transform:translateX(-50%);
-            width:80%;height:60%;
-            background:radial-gradient(ellipse,var(--accent2)0%,transparent 60%);
-            pointer-events:none;z-index:0;filter:blur(60px);
-        }
-        .particles{position:fixed;inset:0;overflow:hidden;z-index:0;}
-        .particle{
-            position:absolute;
-            background:var(--accent2);
-            border-radius:50%;
-            animation:fall linear infinite;
-        }
-        @keyframes fall{
-            0%{transform:translateY(-10px);opacity:0;}
-            10%,90%{opacity:0.4;}
-            100%{transform:translateY(100vh);opacity:0;}
-        }
-        .screen{
-            position:absolute;inset:0;z-index:1;
-            display:none;opacity:0;pointer-events:none;
-        }
-        .screen.active{
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-            animation:smoothFadeIn 1.2s cubic-bezier(.4,0,.2,1) forwards;
-            pointer-events:auto;
-        }
-        @keyframes smoothFadeIn{
-            0%{opacity:0;transform:translateY(20px) scale(.98);}
-            100%{opacity:1;transform:translateY(0) scale(1);}
-        }
-        h1{font-size:3.5rem;font-weight:300;letter-spacing:.05em;text-shadow:0 0 30px var(--accent);}
-        .access-container{display:flex;flex-direction:column;gap:1.2rem;}
-        label{font-size:1.5rem;font-weight:300;letter-spacing:.05em;text-shadow:0 0 20px var(--accent);}
-        .input-wrapper{position:relative;display:flex;align-items:center;}
-        .lock-icon,.eye-icon{
-            position:absolute;width:18px;height:18px;
-            color:var(--accent2);z-index:2;
-        }
-        .lock-icon{left:1.3rem;pointer-events:none;}
-        .eye-icon{right:1.3rem;width:20px;height:20px;cursor:pointer;transition:color .3s;}
-        .eye-icon:hover{color:var(--accent);}
-        input[type="password"],input[type="text"].password-input{
-            width:450px;padding:1rem 3.5rem;font-size:1rem;
-            background:var(--glass);border:1px solid var(--border);border-radius:50px;
-            color:#fff;outline:none;transition:all .4s;letter-spacing:.08em;
-            backdrop-filter:blur(10px);
-        }
-        input[type="password"]:focus,input[type="text"].password-input:focus{
-            background:rgba(30,30,45,.7);border-color:var(--accent);
-            box-shadow:0 0 20px var(--accent);
-        }
-        input::placeholder{color:rgba(255,255,255,.25);}
-        .error{border-color:rgba(239,68,68,.6)!important;animation:shake .4s;}
-        @keyframes shake{
-            0%,100%{transform:translateX(0);}
-            25%{transform:translateX(-12px);}
-            75%{transform:translateX(12px);}
-        }
-        .success{border-color:var(--accent)!important;box-shadow:0 0 25px var(--accent);}
-        .modal-overlay{
-            position:fixed;inset:0;background:rgba(0,0,0,.8);
-            display:none;align-items:center;justify-content:center;
-            z-index:10000;backdrop-filter:blur(10px);
-        }
-        .modal-overlay.active{display:flex;animation:fadeIn .3s;}
-        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-        .modal{
-            background:linear-gradient(135deg,rgba(20,20,30,.95),rgba(30,30,45,.95));
-            border:2px solid var(--accent);border-radius:20px;padding:40px;
-            max-width:500px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);
-            animation:slideUp .4s;
-        }
-        @keyframes slideUp{from{opacity:0;transform:translateY(50px);}to{opacity:1;transform:translateY(0);}}
-        .modal h2{font-size:2rem;margin-bottom:15px;color:var(--accent);text-shadow:0 0 20px var(--accent);}
-        .modal p{font-size:1.1rem;line-height:1.6;color:rgba(255,255,255,.9);margin-bottom:25px;}
-        .modal-btn{
-            padding:12px 30px;
-            background:linear-gradient(135deg,var(--accent),var(--accent2));
-            border:0;border-radius:10px;color:#fff;font-size:16px;cursor:pointer;
-            transition:all .3s;font-weight:600;
-        }
-        .modal-btn:hover{filter:brightness(1.15);box-shadow:0 5px 20px var(--accent);}
-        #browser{width:100%;height:100vh;display:flex;}
-        .sidebar{
-            position:fixed;left:0;top:0;width:80px;height:100vh;
-            background:rgba(10,10,15,.95);border-right:1px solid var(--border);
-            display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:15px;
-            z-index:100;backdrop-filter:blur(10px);
-        }
-        .sidebar-icon{
-            width:50px;height:50px;border-radius:12px;
-            background:rgba(255,255,255,.03);border:1px solid var(--border);
-            display:flex;align-items:center;justify-content:center;cursor:pointer;
-            color:var(--accent2);transition:all .3s;
-        }
-        .sidebar-icon:hover{background:var(--accent);color:#fff;}
-        .sidebar-icon.active{background:var(--accent);border-color:var(--accent);color:#fff;}
-        .browser-header{
-            position:relative;z-index:10;display:none;align-items:center;gap:8px;
-            padding:8px 16px 8px 96px;
-            background:rgba(15,15,20,.98);border-bottom:1px solid var(--border);
-            backdrop-filter:blur(20px);
-        }
-        .browser-header.show{display:flex;}
-        .nav-buttons{display:flex;gap:4px;}
-        .nav-btn{
-            width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
-            background:transparent;border:none;cursor:pointer;transition:all .2s;
-            color:var(--accent2);
-        }
-        .nav-btn:hover{background:var(--glass);color:var(--accent);}
-        .address{
-            flex:1;display:flex;align-items:center;gap:10px;
-            background:var(--glass);border:1px solid var(--border);
-            padding:8px 14px;border-radius:10px;transition:all .3s;max-width:800px;
-        }
-        .address:focus-within{background:rgba(40,40,50,.7);border-color:var(--accent);}
-        .address input{
-            background:transparent;border:0;outline:0;color:#fff;font-size:13px;width:100%;
-        }
-        .address input::placeholder{color:rgba(255,255,255,.35);}
-        .header-icon{width:18px;height:18px;color:var(--accent2);flex-shrink:0;}
-        .window-controls{display:flex;gap:8px;margin-left:auto;}
-        .window-btn{
-            width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
-            background:transparent;border:none;cursor:pointer;transition:all .2s;
-            color:var(--accent2);
-        }
-        .window-btn:hover{background:var(--glass);color:var(--accent);}
-        .content{
-            display:flex;flex:1;position:relative;z-index:2;
-            width:calc(100% - 80px);height:calc(100vh - 48px);
-            overflow:hidden;margin-left:80px;
-        }
-        #browser.active .content{height:100%;}
-        .home-content{
-            width:100%;height:100%;display:flex;flex-direction:column;
-            align-items:center;justify-content:center;gap:2.5rem;
-        }
-        .browser-title{font-size:3.5rem;font-weight:300;letter-spacing:.05em;text-shadow:0 0 30px var(--accent);}
-        .browser-title .gold{color:var(--accent);text-shadow:0 0 40px var(--accent);}
-        .search-bar-wrapper{
-            width:450px;display:flex;align-items:center;gap:12px;
-            background:var(--glass);border:1px solid var(--border);border-radius:50px;
-            padding:1rem 1.5rem;backdrop-filter:blur(10px);transition:border-color .3s;
-        }
-        .search-bar-wrapper:focus-within{border-color:var(--accent);}
-        .google-icon{width:20px;height:20px;flex-shrink:0;}
-        .search-bar-wrapper input{
-            background:transparent;border:0;outline:0;color:#fff;font-size:14px;width:100%;
-        }
-        .search-icon{width:20px;height:20px;color:var(--accent2);flex-shrink:0;}
-        .shortcuts-grid{display:grid;grid-template-columns:repeat(3,220px);gap:1.5rem;}
-        .shortcut{
-            height:140px;background:var(--glass);border:1px solid var(--border);border-radius:12px;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
-            font-size:1rem;font-weight:300;letter-spacing:.05em;cursor:pointer;
-            transition:all .3s;backdrop-filter:blur(10px);padding:15px;
-        }
-        .shortcut:hover{background:rgba(30,30,45,.6);border-color:var(--accent);transform:translateY(-2px);}
-        .shortcut img{width:60px;height:60px;border-radius:10px;object-fit:cover;}
-        .footer-text{position:absolute;bottom:2rem;font-size:.9rem;color:var(--accent2);}
-        .frame{position:absolute;top:0;left:0;width:100%;height:100%;border:0;background:#fff;display:none;}
-        .frame.active{display:block;}
-        .loading{
-            position:absolute;top:0;left:0;right:0;height:3px;
-            background:linear-gradient(90deg,var(--accent),var(--accent2));
-            width:0;transition:width .36s ease,opacity .36s ease;
-            box-shadow:0 6px 18px var(--accent);z-index:100;
-        }
-        .full-page-panel{
-            position:fixed;left:80px;top:0;width:calc(100% - 80px);height:100vh;
-            background:rgba(10,10,15,.98);display:none;flex-direction:column;
-            z-index:99;backdrop-filter:blur(20px);overflow-y:auto;
-        }
-        .full-page-panel.active{display:flex;}
-        .panel-header{padding:30px 40px;border-bottom:1px solid var(--border);background:rgba(15,15,20,.5);}
-        .panel-header h2{
-            font-size:2.5rem;font-weight:600;margin-bottom:20px;
-            background:linear-gradient(135deg,#fff 0%,var(--accent) 100%);
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-        }
-        .panel-search{
-            width:100%;max-width:500px;padding:14px 20px;background:var(--glass);
-            border:1px solid var(--border);border-radius:12px;color:#fff;font-size:15px;outline:none;transition:all .3s;
-        }
-        .panel-search:focus{background:rgba(40,40,50,.7);border-color:var(--accent);}
-        .panel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;padding:40px;}
-        .grid-item{
-            background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:20px;
-            display:flex;flex-direction:column;align-items:center;gap:15px;cursor:pointer;transition:all .3s;
-        }
-        .grid-item:hover{background:rgba(30,30,45,.7);border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 24px var(--accent);}
-        .grid-item img{width:80px;height:80px;border-radius:16px;object-fit:cover;}
-        .grid-item span{font-size:15px;font-weight:500;text-align:center;}
-        .grid-item.request-game{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:var(--accent);}
-        .grid-item.request-game:hover{filter:brightness(1.1);}
-        .settings-content{display:flex;height:100%;}
-        .settings-sidebar{
-            width:250px;background:rgba(15,15,20,.8);border-right:1px solid var(--border);padding:30px 0;
-        }
-        .settings-sidebar h2{font-size:1.8rem;font-weight:600;padding:0 25px 30px;border-bottom:1px solid var(--border);}
-        .settings-nav{margin-top:20px;}
-        .settings-nav-item{
-            padding:12px 25px;display:flex;align-items:center;gap:12px;
-            color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s;font-size:14px;
-            border-left:3px solid transparent;
-        }
-        .settings-nav-item:hover{background:var(--glass);color:rgba(255,255,255,.9);}
-        .settings-nav-item.active{background:var(--accent);color:#fff;border-left-color:var(--accent);}
-        .settings-nav-item svg{width:18px;height:18px;}
-        .settings-main{flex:1;padding:40px;overflow-y:auto;}
-        .settings-section{display:none;}
-        .settings-section.active{display:block;}
-        .settings-section h3{font-size:1.8rem;font-weight:600;margin-bottom:10px;}
-        .settings-section p{color:rgba(255,255,255,.6);margin-bottom:30px;line-height:1.6;}
-        .settings-group{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:25px;margin-bottom:20px;}
-        .settings-group h4{font-size:1.2rem;font-weight:600;margin-bottom:15px;}
-        .settings-row{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--border);}
-        .settings-row:last-child{border-bottom:none;}
-        .settings-label{font-size:14px;color:rgba(255,255,255,.9);}
-        .settings-btn{padding:10px 20px;background:var(--accent);border:0;border-radius:8px;color:#fff;font-size:14px;cursor:pointer;transition:all .3s;}
-        .settings-btn:hover{background:var(--accent2);}
-        .toggle-switch{position:relative;width:48px;height:24px;background:rgba(255,255,255,.1);border-radius:12px;cursor:pointer;transition:all .3s;}
-        .toggle-switch.active{background:var(--accent);}
-        .toggle-switch::after{
-            content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;
-            top:3px;left:3px;transition:all .3s;
-        }
-        .toggle-switch.active::after{left:27px;}
-        .input-field{
-            width:100%;padding:12px 16px;background:var(--glass);border:1px solid var(--border);
-            border-radius:8px;color:#fff;font-size:14px;outline:none;transition:all .3s;margin-top:10px;
-        }
-        .input-field:focus{background:rgba(40,40,50,.7);border-color:var(--accent);}
-        .select-field{width:200px;padding:10px 14px;background:var(--glass);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;outline:none;cursor:pointer;}
-        .custom-cloak-inputs{display:flex;gap:10px;margin-top:15px;}
-        .custom-cloak-inputs input{flex:1;}
-        .add-cloak-btn{padding:10px 20px;background:var(--accent);border:0;border-radius:8px;color:#fff;cursor:pointer;white-space:nowrap;}
-        .tabs-bar{
-            position:fixed;top:48px;left:80px;right:0;height:36px;
-            background:rgba(15,15,20,.98);border-bottom:1px solid var(--border);
-            display:flex;align-items:center;padding:0 8px;gap:6px;z-index:9;
-        }
-        .tab{
-            height:28px;padding:0 12px;background:var(--glass);border:1px solid var(--border);
-            border-radius:8px;display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;
-        }
-        .tab.active{background:var(--accent);color:#fff;}
-        .tab-close{width:14px;height:14px;color:inherit;background:none;border:0;cursor:pointer;}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; height: 100vh; background: #0a0a0f; color: white; overflow: hidden; position: relative; }
+        body::after { content: ''; position: fixed; bottom: -20%; left: 50%; transform: translateX(-50%); width: 60%; height: 50%; background: radial-gradient(ellipse, rgba(255, 215, 0, 0.4) 0%, transparent 70%); pointer-events: none; z-index: 0; filter: blur(40px); }
+        body::before { content: ''; position: fixed; top: -30%; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: radial-gradient(ellipse, rgba(218, 165, 32, 0.2) 0%, transparent 60%); pointer-events: none; z-index: 0; filter: blur(60px); }
+        .draco-easter-egg { position: fixed; width: 80px; height: 80px; opacity: 0.15; pointer-events: none; z-index: 0; animation: float 6s ease-in-out infinite; }
+        .draco-easter-egg:nth-child(1) { top: 10%; left: 5%; }
+        .draco-easter-egg:nth-child(2) { top: 70%; right: 8%; animation-delay: 2s; }
+        .draco-easter-egg:nth-child(3) { bottom: 15%; left: 10%; animation-delay: 4s; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .particles { position: fixed; inset: 0; overflow: hidden; z-index: 0; }
+        .particle { position: absolute; background: rgba(255, 215, 0, 0.4); border-radius: 50%; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-10px); opacity: 0; } 10%, 90% { opacity: 0.4; } 100% { transform: translateY(100vh); opacity: 0; } }
+        .screen { position: absolute; inset: 0; z-index: 1; display: none; opacity: 0; pointer-events: none; }
+        .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; animation: smoothFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: auto; }
+        @keyframes smoothFadeIn { 0% { opacity: 0; transform: translateY(20px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        h1 { font-size: 3.5rem; font-weight: 300; letter-spacing: 0.05em; text-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+        .access-container { display: flex; flex-direction: column; gap: 1.2rem; }
+        label { font-size: 1.5rem; font-weight: 300; letter-spacing: 0.05em; text-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .lock-icon, .eye-icon { position: absolute; width: 18px; height: 18px; color: rgba(255, 215, 0, 0.6); z-index: 2; }
+        .lock-icon { left: 1.3rem; pointer-events: none; }
+        .eye-icon { right: 1.3rem; width: 20px; height: 20px; cursor: pointer; transition: color 0.3s; }
+        .eye-icon:hover { color: rgba(255, 215, 0, 0.9); }
+        input[type="password"], input[type="text"].password-input { width: 450px; padding: 1rem 3.5rem; font-size: 1rem; background: rgba(20, 20, 30, 0.6); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 50px; color: white; outline: none; transition: all 0.4s; letter-spacing: 0.08em; backdrop-filter: blur(10px); }
+        input[type="password"]:focus, input[type="text"].password-input:focus { background: rgba(30, 30, 45, 0.7); border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 20px rgba(255, 215, 0, 0.1); }
+        input::placeholder { color: rgba(255, 255, 255, 0.25); }
+        .error { border-color: rgba(255, 80, 80, 0.4) !important; animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-12px); } 75% { transform: translateX(12px); } }
+        .success { border-color: rgba(255, 215, 0, 0.8) !important; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(10px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal { background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(30, 30, 45, 0.95)); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: slideUp 0.4s; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        .modal h2 { font-size: 2rem; margin-bottom: 15px; color: #FFD700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        .modal p { font-size: 1.1rem; line-height: 1.6; color: rgba(255, 255, 255, 0.9); margin-bottom: 25px; }
+        .modal-btn { padding: 12px 30px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(218, 165, 32, 0.3)); border: 1px solid rgba(255, 215, 0, 0.5); border-radius: 10px; color: #fff; font-size: 16px; cursor: pointer; transition: all 0.3s; font-weight: 600; }
+        .modal-btn:hover { background: linear-gradient(135deg, rgba(255, 215, 0, 0.5), rgba(218, 165, 32, 0.5)); border-color: rgba(255, 215, 0, 0.8); box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3); }
+        #browser { width: 100%; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 80px; height: 100vh; background: rgba(10, 10, 15, 0.95); border-right: 1px solid rgba(255, 215, 0, 0.1); display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 15px; z-index: 100; backdrop-filter: blur(10px); }
+        .sidebar-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 215, 0, 0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; color: rgba(255, 215, 0, 0.6); transition: all 0.3s; }
+        .sidebar-icon:hover { background: rgba(255, 215, 0, 0.1); color: rgba(255, 215, 0, 0.9); }
+        .sidebar-icon.active { background: rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 0.6); color: #FFD700; }
+        .browser-header { position: relative; z-index: 10; display: none; align-items: center; gap: 8px; padding: 8px 16px 8px 96px; background: rgba(15, 15, 20, 0.98); border-bottom: 1px solid rgba(255, 215, 0, 0.1); backdrop-filter: blur(20px); }
+        .browser-header.show { display: flex; }
+        .nav-buttons { display: flex; gap: 4px; }
+        .nav-btn { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: transparent; border: none; cursor: pointer; transition: all 0.2s; color: rgba(255, 215, 0, 0.6); }
+        .nav-btn:hover { background: rgba(255, 215, 0, 0.1); color: rgba(255, 215, 0, 0.9); }
+        .address { flex: 1; display: flex; align-items: center; gap: 10px; background: rgba(30, 30, 40, 0.6); border: 1px solid rgba(255, 215, 0, 0.15); padding: 8px 14px; border-radius: 10px; transition: all 0.3s; max-width: 800px; }
+        .address:focus-within { background: rgba(40, 40, 50, 0.7); border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1); }
+        .address input { background: transparent; border: 0; outline: 0; color: #fff; font-size: 13px; width: 100%; }
+        .address input::placeholder { color: rgba(255, 255, 255, 0.35); }
+        .header-icon { width: 18px; height: 18px; color: rgba(255, 215, 0, 0.6); flex-shrink: 0; }
+        .window-controls { display: flex; gap: 8px; margin-left: auto; }
+        .window-btn { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: transparent; border: none; cursor: pointer; transition: all 0.2s; color: rgba(255, 215, 0, 0.6); }
+        .window-btn:hover { background: rgba(255, 215, 0, 0.1); color: rgba(255, 215, 0, 0.9); }
+        .devtools-panel { position: fixed; right: 0; top: 48px; width: 400px; height: calc(100vh - 48px); background: rgba(15, 15, 20, 0.98); border-left: 1px solid rgba(255, 215, 0, 0.1); display: none; flex-direction: column; z-index: 101; backdrop-filter: blur(20px); }
+        .devtools-panel.active { display: flex; }
+        .devtools-tabs { display: flex; background: rgba(20, 20, 30, 0.8); border-bottom: 1px solid rgba(255, 215, 0, 0.1); }
+        .devtools-tab { padding: 12px 20px; cursor: pointer; color: rgba(255, 255, 255, 0.5); font-size: 13px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .devtools-tab:hover { color: rgba(255, 215, 0, 0.8); background: rgba(255, 215, 0, 0.05); }
+        .devtools-tab.active { color: #FFD700; border-bottom-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .devtools-content { flex: 1; overflow-y: auto; padding: 15px; }
+        .devtools-section { display: none; }
+        .devtools-section.active { display: block; }
+        .element-tree { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; }
+        .element-node { color: rgba(255, 255, 255, 0.9); cursor: pointer; padding: 2px 0; position: relative; padding-left: 20px; }
+        .element-node:hover { background: rgba(255, 215, 0, 0.05); }
+        .element-tag { color: #FFD700; }
+        .element-attr { color: #fbbf24; }
+        .element-text { color: rgba(255, 255, 255, 0.7); }
+        .element-collapse { position: absolute; left: 4px; top: 2px; width: 12px; height: 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: rgba(255, 215, 0, 0.6); }
+        .element-children { padding-left: 16px; display: none; }
+        .element-children.expanded { display: block; }
+        .console-output { font-family: 'Courier New', monospace; font-size: 12px; min-height: 100px; max-height: calc(100vh - 250px); overflow-y: auto; margin-bottom: 10px; }
+        .console-entry { padding: 6px 10px; border-bottom: 1px solid rgba(255, 215, 0, 0.05); display: flex; align-items: flex-start; gap: 8px; }
+        .console-entry.log { color: rgba(255, 255, 255, 0.9); }
+        .console-entry.warn { color: #fbbf24; background: rgba(251, 191, 36, 0.05); }
+        .console-entry.error { color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+        .console-icon { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+        .console-input-wrapper { display: flex; align-items: center; gap: 8px; background: rgba(30, 30, 40, 0.6); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 6px; padding: 8px 12px; }
+        .console-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; }
+        .console-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        .console-clear-btn { padding: 6px 12px; background: rgba(255, 215, 0, 0.2); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 6px; color: #fff; font-size: 11px; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; }
+        .console-clear-btn:hover { background: rgba(255, 215, 0, 0.3); }
+        .content { display: flex; flex: 1; position: relative; z-index: 2; width: 100%; height: calc(100vh - 48px); overflow: hidden; margin-left: 80px; }
+        #browser.active .content { height: 100%; }
+        .home-content { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem; }
+        .browser-title { font-size: 3.5rem; font-weight: 300; letter-spacing: 0.05em; text-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+        .browser-title .gold { color: #FFD700; text-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+        .search-bar-wrapper { width: 450px; display: flex; align-items: center; gap: 12px; background: rgba(20, 20, 30, 0.8); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 50px; padding: 1rem 1.5rem; backdrop-filter: blur(10px); transition: border-color .3s; }
+        .search-bar-wrapper:focus-within { border-color: rgba(255, 215, 0, 0.4); }
+        .google-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .search-bar-wrapper input { background: transparent; border: 0; outline: 0; color: #fff; font-size: 14px; width: 100%; }
+        .search-icon { width: 20px; height: 20px; color: rgba(255, 215, 0, 0.5); flex-shrink: 0; }
+        .shortcuts-grid { display: grid; grid-template-columns: repeat(3, 220px); gap: 1.5rem; }
+        .shortcut { height: 140px; background: rgba(20, 20, 30, 0.4); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; font-size: 1rem; font-weight: 300; letter-spacing: 0.05em; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(10px); padding: 15px; }
+        .shortcut:hover { background: rgba(30, 30, 45, 0.6); border-color: rgba(255, 215, 0, 0.3); transform: translateY(-2px); }
+        .shortcut img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+        .footer-text { position: absolute; bottom: 2rem; font-size: 0.9rem; color: rgba(255, 215, 0, 0.5); letter-spacing: 0.05em; }
+        .frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; background: #fff; display: none; }
+        .frame.active { display: block; }
+        .loading { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #FFD700, #DAA520); width: 0%; transition: width .36s ease, opacity .36s ease; box-shadow: 0 6px 18px rgba(255, 215, 0, 0.3); z-index: 100; }
+        .full-page-panel { position: fixed; left: 80px; top: 0; width: calc(100% - 80px); height: 100vh; background: rgba(10, 10, 15, 0.98); display: none; flex-direction: column; z-index: 99; backdrop-filter: blur(20px); overflow-y: auto; }
+        .full-page-panel.active { display: flex; }
+        .panel-header { padding: 30px 40px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); background: rgba(15, 15, 20, 0.5); }
+        .panel-header h2 { font-size: 2.5rem; font-weight: 600; margin-bottom: 20px; background: linear-gradient(135deg, #fff 0%, #FFD700 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .panel-search { width: 100%; max-width: 500px; padding: 14px 20px; background: rgba(30, 30, 40, 0.6); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; color: #fff; font-size: 15px; outline: none; transition: all 0.3s; }
+        .panel-search:focus { background: rgba(40, 40, 50, 0.7); border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1); }
+        .panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 40px; }
+        .grid-item { background: rgba(20, 20, 30, 0.5); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s; }
+        .grid-item:hover { background: rgba(30, 30, 45, 0.7); border-color: rgba(255, 215, 0, 0.4); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2); }
+        .grid-item img { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; }
+        .grid-item span { font-size: 15px; font-weight: 500; text-align: center; }
+        .grid-item.request-game { background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.2)); border-color: rgba(255, 215, 0, 0.4); }
+        .grid-item.request-game:hover { background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(218, 165, 32, 0.3)); border-color: rgba(255, 215, 0, 0.6); }
+        .settings-content { display: flex; height: 100%; }
+        .settings-sidebar { width: 250px; background: rgba(15, 15, 20, 0.8); border-right: 1px solid rgba(255, 215, 0, 0.1); padding: 30px 0; }
+        .settings-sidebar h2 { font-size: 1.8rem; font-weight: 600; padding: 0 25px 30px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); }
+        .settings-nav { margin-top: 20px; }
+        .settings-nav-item { padding: 12px 25px; display: flex; align-items: center; gap: 12px; color: rgba(255, 255, 255, 0.6); cursor: pointer; transition: all 0.2s; font-size: 14px; border-left: 3px solid transparent; }
+        .settings-nav-item:hover { background: rgba(255, 215, 0, 0.05); color: rgba(255, 255, 255, 0.9); }
+        .settings-nav-item.active { background: rgba(255, 215, 0, 0.1); color: #fff; border-left-color: #FFD700; }
+        .settings-nav-item svg { width: 18px; height: 18px; }
+        .settings-main { flex: 1; padding: 40px; overflow-y: auto; }
+        .settings-section { display: none; }
+        .settings-section.active { display: block; }
+        .settings-section h3 { font-size: 1.8rem; font-weight: 600; margin-bottom: 10px; }
+        .settings-section p { color: rgba(255, 255, 255, 0.6); margin-bottom: 30px; line-height: 1.6; }
+        .settings-group { background: rgba(20, 20, 30, 0.5); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+        .settings-group h4 { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255, 215, 0, 0.08); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-label { font-size: 14px; color: rgba(255, 255, 255, 0.9); }
+        .settings-btn { padding: 10px 20px; background: rgba(255, 215, 0, 0.2); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; color: #fff; font-size: 14px; cursor: pointer; transition: all 0.3s; }
+        .settings-btn:hover { background: rgba(255, 215, 0, 0.3); border-color: rgba(255, 215, 0, 0.6); }
+        .toggle-switch { position: relative; width: 48px; height: 24px; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+        .toggle-switch.active { background: #FFD700; }
+        .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: all 0.3s; }
+        .toggle-switch.active::after { left: 27px; }
+        .input-field { width: 100%; padding: 12px 16px; background: rgba(30, 30, 40, 0.6); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #fff; font-size: 14px; outline: none; transition: all 0.3s; margin-top: 10px; }
+        .input-field:focus { background: rgba(40, 40, 50, 0.7); border-color: rgba(255, 215, 0, 0.4); }
+        .select-field { width: 200px; padding: 10px 14px; background: rgba(30, 30, 40, 0.6); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #fff; font-size: 14px; outline: none; cursor: pointer; }
+        .custom-cloak-inputs { display: flex; gap: 10px; margin-top: 15px; }
+        .custom-cloak-inputs input { flex: 1; }
+        .add-cloak-btn { padding: 10px 20px; background: rgba(255, 215, 0, 0.2); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; color: #fff; cursor: pointer; white-space: nowrap; }
     </style>
 </head>
 <body>
+    <img src="https://toppng.com/uploads/preview/un-gold-guns-machine-ak-gold-draco-11562954409yym07wdnjt.png " class="draco-easter-egg" alt="">
+    <img src="https://toppng.com/uploads/preview/un-gold-guns-machine-ak-gold-draco-11562954409yym07wdnjt.png " class="draco-easter-egg" alt="">
+    <img src="https://toppng.com/uploads/preview/un-gold-guns-machine-ak-gold-draco-11562954409yym07wdnjt.png " class="draco-easter-egg" alt="">
     <div class="particles" id="particles"></div>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
-            <h2>Notice</h2>
-            <p>All games are sourced from gn-math.dev. DMCA requests go to gn-math directly.</p>
+            <h2>DMCA & CONTENT NOTICE</h2>
+            <p>
+All games available on this website are sourced from gn-math.dev.
+We do not claim ownership of any third-party games unless explicitly stated.
+
+If you own or developed a game listed here and would like it removed,
+all DMCA requests are handled directly by gn-math.
+
+HOW TO SUBMIT A DMCA REQUEST
+
+• Discord (fastest response)
+  Join the Discord and DM "breadbb" or ping them in a public channel
+  https://discord.gg/NAFw4ykZ7n 
+
+• Email (delayed response)
+  Send an email to: gn.math.business@gmail.com
+  Subject MUST start with: !DMCA
+  Proof of ownership is required or removal may be delayed.
+
+DATA & PRIVACY NOTICE
+
+We do not collect sensitive personal information.
+Any data provided (such as emails or messages sent through Discord)
+is used only to respond to requests, process DMCA claims,
+and comply with legal obligations.
+
+We do not sell, trade, or share personal data with third parties.
+All data is handled in accordance with gn-math’s Privacy Policy.
+
+By continuing to use this site, you acknowledge and agree to these terms.
+</p>
             <button class="modal-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
@@ -305,9 +209,15 @@
         <div class="access-container">
             <label for="accessCode">Access Code</label>
             <div class="input-wrapper">
-                <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
                 <input type="password" id="accessCode" placeholder="Enter code..." autocomplete="off" class="password-input">
-                <svg class="eye-icon" id="togglePassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-icon" id="togglePassword" xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
             </div>
         </div>
     </div>
@@ -315,21 +225,35 @@
     <div id="browser" class="screen">
         <div class="sidebar">
             <div class="sidebar-icon active" id="proxyIcon" onclick="showProxy()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                    <path d="M2 12h20"/>
+                </svg>
             </div>
             <div class="sidebar-icon" id="appsIcon" onclick="showApps()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="7" x="3" y="3" rx="1"/>
+                    <rect width="7" height="7" x="14" y="3" rx="1"/>
+                    <rect width="7" height="7" x="14" y="14" rx="1"/>
+                    <rect width="7" height="7" x="3" y="14" rx="1"/>
+                </svg>
             </div>
             <div class="sidebar-icon" id="gamesIcon" onclick="showGames()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="6" x2="10" y1="12" y2="12"/>
+                    <line x1="8" x2="8" y1="10" y2="14"/>
+                    <line x1="15" x2="15.01" y1="13" y2="13"/>
+                    <line x1="18" x2="18.01" y1="11" y2="11"/>
+                    <rect width="20" height="12" x="2" y="6" rx="2"/>
+                </svg>
             </div>
             <div class="sidebar-icon" id="settingsIcon" onclick="showSettings()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
             </div>
-        </div>
-
-        <div class="tabs-bar" id="tabsBar">
-            <button class="tab active" data-id="0">New Tab</button>
         </div>
 
         <div class="full-page-panel" id="appsPanel">
@@ -356,11 +280,16 @@
                     <h2>Settings</h2>
                     <div class="settings-nav">
                         <div class="settings-nav-item active" onclick="showSettingsSection('cloaking')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                            </svg>
                             Cloaking
                         </div>
                         <div class="settings-nav-item" onclick="showSettingsSection('proxy')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                            </svg>
                             Proxy & Browser
                         </div>
                     </div>
@@ -369,6 +298,7 @@
                     <div class="settings-section active" id="cloakingSection">
                         <h3>Cloaking</h3>
                         <p>About:Blank allows you to hide your tab history by appearing that you are on a blank tab. If About:Blank doesn't work, try blob cloaking.</p>
+                        
                         <div class="settings-group">
                             <h4>About:Blank & Blob Cloaking</h4>
                             <div class="settings-row">
@@ -380,9 +310,10 @@
                                 <button class="settings-btn" onclick="launchBlob()">Launch Blob</button>
                             </div>
                         </div>
+
                         <div class="settings-group">
                             <h4>Automatic cloaking</h4>
-                            <p style="font-size:13px;color:var(--accent2);margin-bottom:15px;">This toggles automatic cloaking when the site first loads.</p>
+                            <p style="font-size: 13px; color: rgba(255,215,0,0.5); margin-bottom: 15px;">This toggles automatic cloaking when the site first loads.</p>
                             <div class="settings-row">
                                 <div class="settings-label">Auto-Launch About:Blank</div>
                                 <div class="toggle-switch" id="autoAboutBlank" onclick="toggleAutoAboutBlank()"></div>
@@ -392,9 +323,10 @@
                                 <div class="toggle-switch" id="autoBlob" onclick="toggleAutoBlob()"></div>
                             </div>
                         </div>
+
                         <div class="settings-group">
                             <h4>Tab Customization</h4>
-                            <p style="font-size:13px;color:var(--accent2);margin-bottom:15px;">Change your tab title and icon to disguise the website.</p>
+                            <p style="font-size: 13px; color: rgba(255,215,0,0.5); margin-bottom: 15px;">Change your tab title and icon to disguise the website.</p>
                             <div class="settings-row">
                                 <div class="settings-label">Preset Cloaks</div>
                                 <select class="select-field" id="presetCloak" onchange="applyPresetCloak()">
@@ -408,13 +340,13 @@
                                     <option value="schoology">Schoology</option>
                                 </select>
                             </div>
-                            <div class="settings-row" style="display:block;">
-                                <div class="settings-label" style="margin-bottom:10px;">Custom Tab Settings</div>
+                            <div class="settings-row" style="display: block;">
+                                <div class="settings-label" style="margin-bottom: 10px;">Custom Tab Settings</div>
                                 <input type="text" class="input-field" id="customTitle" placeholder="Custom tab title..." onchange="applyCustomCloak()">
                                 <input type="text" class="input-field" id="customIcon" placeholder="Custom favicon URL..." onchange="applyCustomCloak()">
                             </div>
-                            <div class="settings-row" style="display:block;">
-                                <div class="settings-label" style="margin-bottom:10px;">Add to Presets</div>
+                            <div class="settings-row" style="display: block;">
+                                <div class="settings-label" style="margin-bottom: 10px;">Add to Presets</div>
                                 <div class="custom-cloak-inputs">
                                     <input type="text" class="input-field" id="newCloakTitle" placeholder="Title">
                                     <input type="text" class="input-field" id="newCloakIcon" placeholder="Icon URL">
@@ -423,9 +355,11 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="settings-section" id="proxySection">
                         <h3>Proxy & Browser</h3>
                         <p>Configure your proxy settings and browser preferences.</p>
+                        
                         <div class="settings-group">
                             <h4>Search Engine</h4>
                             <div class="settings-row">
@@ -445,151 +379,937 @@
 
         <header class="browser-header" id="browserHeader">
             <div class="nav-buttons">
-                <button class="nav-btn" id="backBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
-                <button class="nav-btn" id="forwardBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
-                <button class="nav-btn" id="reloadBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.636-6.364"/><path d="M21 6v6h-6"/></svg></button>
+                <button class="nav-btn" id="backBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6"/>
+                    </svg>
+                </button>
+                <button class="nav-btn" id="forwardBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6"/>
+                    </svg>
+                </button>
+                <button class="nav-btn" id="reloadBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 1 1-2.636-6.364"/>
+                        <path d="M21 6v6h-6"/>
+                    </svg>
+                </button>
             </div>
+
             <div class="address">
-                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
                 <input id="urlInput" type="text" autocomplete="off" placeholder="Enter search or web address"/>
-                <svg class="header-icon" id="searchBtn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor:pointer;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <svg class="header-icon" id="searchBtn" xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.3-4.3"/>
+                </svg>
             </div>
+
             <div class="window-controls">
-                <button class="window-btn" onclick="showHome()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
-                <button class="window-btn" onclick="addTab()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                <button class="window-btn" onclick="showHome()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </button>
+                <button class="window-btn" onclick="toggleDevTools()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
+                    </svg>
+                </button>
+                <button class="window-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    </svg>
+                </button>
+                <button class="window-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18"/>
+                        <path d="m6 6 12 12"/>
+                    </svg>
+                </button>
             </div>
         </header>
 
         <main class="content">
             <div class="loading" id="loadingBar"></div>
+            
             <section class="home-content" id="homeScreen">
                 <h1 class="browser-title">Start <span class="gold">Browsing</span>.</h1>
+                
                 <div class="search-bar-wrapper">
-                    <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                    <input id="homeSearchInput" placeholder="Search the web or paste a URL..."/>
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg ">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <input id="homeSearchInput" placeholder="Search the web or paste a URL..." />
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
                 </div>
+
                 <div class="shortcuts-grid" id="shortcutsGrid">
-                    <div class="shortcut" data-url="https://google.com"><img src="https://www.google.com/favicon.ico" alt="Google"><span>Google</span></div>
-                    <div class="shortcut" data-url="https://tiktok.com"><img src="https://www.tiktok.com/favicon.ico" alt="TikTok"><span>TikTok</span></div>
-                    <div class="shortcut" data-url="https://geforce.com"><img src="https://www.nvidia.com/favicon.ico" alt="GeForce"><span>GeForce</span></div>
-                    <div class="shortcut" data-url="https://espn.com"><img src="https://www.espn.com/favicon.ico" alt="ESPN"><span>ESPN</span></div>
-                    <div class="shortcut" data-url="https://github.com"><img src="https://github.com/favicon.ico" alt="GitHub"><span>GitHub</span></div>
-                    <div class="shortcut" data-url="https://chat.openai.com"><img src="https://openai.com/favicon.ico" alt="ChatGPT"><span>ChatGPT</span></div>
+                    <div class="shortcut" data-url="https://google.com ">
+                        <img src="https://gointospace.app/assets/imgs/sb/Google.webp " alt="Google">
+                        <span>Google</span>
+                    </div>
+                    <div class="shortcut" data-url="https://tiktok.com ">
+                        <img src="https://gointospace.app/assets/imgs/sb/TikTok.webp " alt="TikTok">
+                        <span>TikTok</span>
+                    </div>
+                    <div class="shortcut" data-url="https://geforce.com ">
+                        <img src="https://gointospace.app/assets/imgs/sb/Geforce_Now.webp " alt="GeForce">
+                        <span>GeForce</span>
+                    </div>
+                    <div class="shortcut" data-url="https://espn.com ">
+                        <img src="https://gointospace.app/assets/imgs/sb/ESPN.webp " alt="ESPN">
+                        <span>ESPN</span>
+                    </div>
+                    <div class="shortcut" data-url="https://github.com ">
+                        <img src="https://gointospace.app/assets/imgs/sb/GitHub.webp " alt="GitHub">
+                        <span>GitHub</span>
+                    </div>
+                    <div class="shortcut" data-url="https://chat.openai.com ">
+                        <img src="https://gointospace.app/assets/imgs/sb/ChatGPT.webp " alt="ChatGPT">
+                        <span>ChatGPT</span>
+                    </div>
                 </div>
+
                 <div class="footer-text">Managed by Golden Draco</div>
             </section>
+
             <iframe id="sj-frame" class="frame"></iframe>
         </main>
+
+        <div class="devtools-panel" id="devtoolsPanel">
+            <div class="devtools-tabs">
+                <div class="devtools-tab active" onclick="switchDevTab('elements')">Elements</div>
+                <div class="devtools-tab" onclick="switchDevTab('console')">Console</div>
+            </div>
+            <div class="devtools-content">
+                <div class="devtools-section active" id="elementsTab">
+                    <div class="element-tree" id="elementTree"></div>
+                </div>
+                <div class="devtools-section" id="consoleTab">
+                    <button class="console-clear-btn" onclick="clearConsole()">Clear Console</button>
+                    <div class="console-output" id="consoleOutput"></div>
+                    <div class="console-input-wrapper">
+                        <span style="color: rgba(255,215,0,0.5);">&gt;</span>
+                        <input type="text" class="console-input" id="consoleInput" placeholder="Enter JavaScript..." />
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const CORRECT_CODE='goldendraco';
-        const welcomeScreen=document.getElementById('welcome');
-        const accessScreen=document.getElementById('access');
-        const browserScreen=document.getElementById('browser');
-        const accessInput=document.getElementById('accessCode');
-        const togglePassword=document.getElementById('togglePassword');
-        const modalOverlay=document.getElementById('modalOverlay');
-        const urlInput=document.getElementById('urlInput');
-        const homeSearchInput=document.getElementById('homeSearchInput');
-        const searchBtn=document.getElementById('searchBtn');
-        const reloadBtn=document.getElementById('reloadBtn');
-        const browserFrame=document.getElementById('sj-frame');
-        const homeScreen=document.getElementById('homeScreen');
-        const browserHeader=document.getElementById('browserHeader');
-        const loadingBar=document.getElementById('loadingBar');
-        const appsPanel=document.getElementById('appsPanel');
-        const appsList=document.getElementById('appsList');
-        const appsSearch=document.getElementById('appsSearch');
-        const gamesPanel=document.getElementById('gamesPanel');
-        const gamesList=document.getElementById('gamesList');
-        const gamesSearch=document.getElementById('gamesSearch');
-        const settingsPanel=document.getElementById('settingsPanel');
-        const tabsBar=document.getElementById('tabsBar');
-        let currentSearchEngine="google";
-        const searchEngines={
-            google:"https://www.google.com/search?q=%s",
-            duckduckgo:"https://duckduckgo.com/?q=%s",
-            bing:"https://www.bing.com/search?q=%s",
-            brave:"https://search.brave.com/search?q=%s"
-        };
-        let history=[],historyIndex=-1,scramjet,connection;
-        let games=[],allGames=[],apps=[],allApps=[];
-        const ZONES_URL="https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json";
-        const COVER_URL="https://cdn.jsdelivr.net/gh/gn-math/covers@main";
-        const HTML_URL="https://cdn.jsdelivr.net/gh/gn-math/html@main";
-        const GAME_REQUEST_URL="https://docs.google.com/forms/d/e/1FAIpQLScmBoH4QcosXdLyideOuWygrwKHPHSKHAzTCNekA10jgT90wg/viewform?usp=dialog";
-        const appsData=[
-            {name:'TikTok',url:'https://tiktok.com',img:'https://www.tiktok.com/favicon.ico'},
-            {name:'YouTube',url:'https://youtube.com',img:'https://www.youtube.com/favicon.ico'},
-            {name:'Coolmath Games',url:'https://coolmathgames.com',img:'https://www.coolmathgames.com/favicon.ico'},
-            {name:'Discord',url:'https://discord.com',img:'https://discord.com/favicon.ico'},
-            {name:'Spotify',url:'https://spotify.com',img:'https://spotify.com/favicon.ico'},
-            {name:'Netflix',url:'https://netflix.com',img:'https://netflix.com/favicon.ico'},
-            {name:'Reddit',url:'https://reddit.com',img:'https://reddit.com/favicon.ico'},
-            {name:'Twitter/X',url:'https://x.com',img:'https://x.com/favicon.ico'},
-            {name:'Instagram',url:'https://instagram.com',img:'https://instagram.com/favicon.ico'},
-            {name:'Twitch',url:'https://twitch.tv',img:'https://twitch.tv/favicon.ico'},
-            {name:'Amazon',url:'https://amazon.com',img:'https://amazon.com/favicon.ico'},
-            {name:'Facebook',url:'https://facebook.com',img:'https://facebook.com/favicon.ico'}
-        ];
-        const cloakPresets={
-            khan:{title:'Khan Academy',icon:'https://cdn.kastatic.org/images/favicon.ico'},
-            google:{title:'Google',icon:'https://www.google.com/favicon.ico'},
-            classroom:{title:'Classes',icon:'https://ssl.gstatic.com/classroom/ic_product_classroom_32.png'},
-            docs:{title:'Google Docs',icon:'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico'},
-            drive:{title:'My Drive - Google Drive',icon:'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png'},
-            canvas:{title:'Canvas',icon:'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico'},
-            schoology:{title:'Home | Schoology',icon:'https://asset-cdn.schoology.com/sites/all/themes/schoology_theme/favicon.ico'}
-        };
-        let customCloaks={},tabs=[],activeTab=0;
+        const CORRECT_CODE = 'goldendraco';
+        const welcomeScreen = document.getElementById('welcome');
+        const accessScreen = document.getElementById('access');
+        const browserScreen = document.getElementById('browser');
+        const accessInput = document.getElementById('accessCode');
+        const togglePassword = document.getElementById('togglePassword');
+        const particlesContainer = document.getElementById('particles');
+        const modalOverlay = document.getElementById('modalOverlay');
 
-        function createParticles(){const n=50;for(let i=0;i<n;i++){const p=document.createElement('div');p.className='particle';const s=Math.random()*2+1;p.style.width=s+'px';p.style.height=s+'px';p.style.left=Math.random()*100+'%';const d=Math.random()*12+8;p.style.animationDuration=d+'s';p.style.animationDelay=Math.random()*5+'s';document.getElementById('particles').appendChild(p);}}
+        const urlInput = document.getElementById('urlInput');
+        const homeSearchInput = document.getElementById('homeSearchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const browserFrame = document.getElementById('sj-frame');
+        const homeScreen = document.getElementById('homeScreen');
+        const browserHeader = document.getElementById('browserHeader');
+        const loadingBar = document.getElementById('loadingBar');
+
+        const appsPanel = document.getElementById('appsPanel');
+        const appsList = document.getElementById('appsList');
+        const appsSearch = document.getElementById('appsSearch');
+        const gamesPanel = document.getElementById('gamesPanel');
+        const gamesList = document.getElementById('gamesList');
+        const gamesSearch = document.getElementById('gamesSearch');
+        const settingsPanel = document.getElementById('settingsPanel');
+
+        let currentSearchEngine = "google";
+        let searchEngines = {
+            google: "https://www.google.com/search?q=%s ",
+            duckduckgo: "https://duckduckgo.com/?q=%s ",
+            bing: "https://www.bing.com/search?q=%s ",
+            brave: "https://search.brave.com/search?q=%s "
+        };
+
+        let history = [];
+        let historyIndex = -1;
+        let scramjet, connection;
+        let games = [];
+        let allGames = [];
+        let apps = [];
+        let allApps = [];
+        let consoleHistory = [];
+
+        const ZONES_URL = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json ";
+        const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main ";
+        const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main ";
+        const GAME_REQUEST_URL = "https://docs.google.com/forms/d/e/1FAIpQLScmBoH4QcosXdLyideOuWygrwKHPHSKHAzTCNekA10jgT90wg/viewform?usp=dialog ";
+
+        const appsData = [
+            { name: 'TikTok', url: 'https://tiktok.com ', img: 'https://gointospace.app/assets/imgs/sb/TikTok.webp ' },
+            { name: 'YouTube', url: 'https://youtube.com ', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png ' },
+            { name: 'Coolmath Games', url: 'https://coolmathgames.com ', img: 'https://www.coolmathgames.com/sites/default/files/public_games/37723/featured.png ' },
+            { name: 'Discord', url: 'https://discord.com ', img: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png ' },
+            { name: 'Spotify', url: 'https://spotify.com ', img: 'https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png ' },
+            { name: 'Netflix', url: 'https://netflix.com ', img: 'https://images.ctfassets.net/4cd45et68cgf/7LrExJ6PAj6MSIPkDyCO86/542b1dfabbf3959908f69be546879952/Netflix-Brand-Logo.png ' },
+            { name: 'Reddit', url: 'https://reddit.com ', img: 'https://www.redditinc.com/assets/images/site/reddit-logo.png ' },
+            { name: 'Twitter/X', url: 'https://x.com ', img: 'https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023_%28white%29.png ' },
+            { name: 'Instagram', url: 'https://instagram.com ', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png ' },
+            { name: 'Twitch', url: 'https://twitch.tv ', img: 'https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png ' },
+            { name: 'Amazon', url: 'https://amazon.com ', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png ' },
+            { name: 'Facebook', url: 'https://facebook.com ', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png ' }
+        ];
+
+        const cloakPresets = {
+            khan: { title: 'Khan Academy', icon: 'https://cdn.kastatic.org/images/favicon.ico ' },
+            google: { title: 'Google', icon: 'https://www.google.com/favicon.ico ' },
+            classroom: { title: 'Classes', icon: 'https://ssl.gstatic.com/classroom/ic_product_classroom_32.png ' },
+            docs: { title: 'Google Docs', icon: 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico ' },
+            drive: { title: 'My Drive - Google Drive', icon: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png ' },
+            canvas: { title: 'Canvas', icon: 'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico ' },
+            schoology: { title: 'Home | Schoology', icon: 'https://asset-cdn.schoology.com/sites/all/themes/schoology_theme/favicon.ico ' }
+        };
+
+        let customCloaks = {};
+
+        function createParticles() {
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 2 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                const duration = Math.random() * 12 + 8;
+                particle.style.animationDuration = duration + 's';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
         createParticles();
-        function closeModal(){modalOverlay.classList.remove('active');}
-        function loadSettings(){const e=localStorage.getItem('searchEngine');if(e){currentSearchEngine=e;document.getElementById('searchEngine').value=e;}const c=localStorage.getItem('customCloaks');if(c){customCloaks=JSON.parse(c);updateCloakDropdown();}const a=localStorage.getItem('autoAboutBlank')==='true',b=localStorage.getItem('autoBlob')==='true';if(a)document.getElementById('autoAboutBlank').classList.add('active');if(b)document.getElementById('autoBlob').classList.add('active');}
-        function checkAutoCloak(){if(localStorage.getItem('autoAboutBlank')==='true')launchAboutBlank();else if(localStorage.getItem('autoBlob')==='true')launchBlob();}
-        window.addEventListener('load',async()=>{if(typeof $scramjetLoadController!=='undefined'){const{ScramjetController}=$scramjetLoadController();scramjet=new ScramjetController({files:{wasm:'/scram/scramjet.wasm.wasm',all:'/scram/scramjet.all.js',sync:'/scram/scramjet.sync.js'}});scramjet.init();}if(typeof BareMux!=='undefined')connection=new BareMux.BareMuxConnection("/baremux/worker.js");loadGames();loadApps();loadSettings();checkAutoCloak();});
-        async function loadGames(){try{const r=await fetch(ZONES_URL+"?t="+Date.now());allGames=await r.json();games=allGames;displayGames();}catch{gamesList.innerHTML='<p style="padding:40px;color:var(--accent2);text-align:center;">Failed to load games</p>';}}
-        function displayGames(){gamesList.innerHTML='';const req=document.createElement('div');req.className='grid-item request-game';req.onclick=()=>window.open(GAME_REQUEST_URL,'_blank');req.innerHTML='<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>Request a Game</span>';gamesList.appendChild(req);allGames.forEach(g=>{const item=document.createElement('div');item.className='grid-item';item.onclick=()=>playGame(g);const cover=g.cover.replace('{COVER_URL}',COVER_URL).replace('{HTML_URL}',HTML_URL);item.innerHTML=`<img src="${cover}" alt="${g.name}"><span>${g.name}</span>`;gamesList.appendChild(item);});}
-        function filterGames(){const q=gamesSearch.value.toLowerCase();allGames=games.filter(g=>g.name.toLowerCase().includes(q));displayGames();}
-        async function playGame(g){if(g.url.startsWith('http')){loadUrl(g.url);showProxy();return;}const u=g.url.replace('{COVER_URL}',COVER_URL).replace('{HTML_URL}',HTML_URL);try{const r=await fetch(u+"?t="+Date.now());const h=await r.text();const w=window.open('about:blank','_blank');if(w){w.document.open();w.document.write(h);w.document.close();w.document.title=g.name;}}catch{alert("Failed to load game.")}}        function loadApps(){allApps=appsData;apps=allApps;displayApps();}
-        function displayApps(){appsList.innerHTML='';apps.forEach(a=>{const item=document.createElement('div');item.className='grid-item';item.onclick=()=>{loadUrl(a.url);showProxy();};item.innerHTML=`<img src="${a.img}" alt="${a.name}" onerror="this.src='https://via.placeholder.com/80'"><span>${a.name}</span>`;appsList.appendChild(item);});}
-        function filterApps(){const q=appsSearch.value.toLowerCase();apps=allApps.filter(a=>a.name.toLowerCase().includes(q));displayApps();}
-        function showProxy(){document.querySelectorAll('.sidebar-icon').forEach(i=>i.classList.remove('active'));document.getElementById('proxyIcon').classList.add('active');[appsPanel,gamesPanel,settingsPanel].forEach(p=>p.classList.remove('active'));}
-        function showApps(){document.querySelectorAll('.sidebar-icon').forEach(i=>i.classList.remove('active'));document.getElementById('appsIcon').classList.add('active');appsPanel.classList.add('active');gamesPanel.classList.remove('active');settingsPanel.classList.remove('active');}
-        function showGames(){document.querySelectorAll('.sidebar-icon').forEach(i=>i.classList.remove('active'));document.getElementById('gamesIcon').classList.add('active');gamesPanel.classList.add('active');appsPanel.classList.remove('active');settingsPanel.classList.remove('active');}
-        function showSettings(){document.querySelectorAll('.sidebar-icon').forEach(i=>i.classList.remove('active'));document.getElementById('settingsIcon').classList.add('active');settingsPanel.classList.add('active');appsPanel.classList.remove('active');gamesPanel.classList.remove('active');}
-        function showSettingsSection(s){document.querySelectorAll('.settings-nav-item').forEach(i=>i.classList.remove('active'));document.querySelectorAll('.settings-section').forEach(x=>x.classList.remove('active'));event.target.closest('.settings-nav-item').classList.add('active');if(s==='cloaking')document.getElementById('cloakingSection').classList.add('active');if(s==='proxy')document.getElementById('proxySection').classList.add('active');}
-        function launchAboutBlank(){const w=window.open('about:blank','_blank');if(w){w.document.write(`<!DOCTYPE html><html><head><title>about:blank</title></head><body style="margin:0;padding:0;overflow:hidden;"><iframe src="${window.location.href}" style="width:100%;height:100vh;border:0;"></iframe></body></html>`);w.document.close();}}
-        function launchBlob(){const h=`<!DOCTYPE html><html><head><title>about:blank</title></head><body style="margin:0;padding:0;overflow:hidden;"><iframe src="${window.location.href}" style="width:100%;height:100vh;border:0;"></iframe></body></html>`;const b=new Blob([h],{type:'text/html'});const u=URL.createObjectURL(b);window.open(u,'_blank');}
-        function toggleAutoAboutBlank(){const t=document.getElementById('autoAboutBlank');const a=t.classList.contains('active');if(a){t.classList.remove('active');localStorage.removeItem('autoAboutBlank');}else{t.classList.add('active');document.getElementById('autoBlob').classList.remove('active');localStorage.setItem('autoAboutBlank','true');localStorage.removeItem('autoBlob');}}
-        function toggleAutoBlob(){const t=document.getElementById('autoBlob');const a=t.classList.contains('active');if(a){t.classList.remove('active');localStorage.removeItem('autoBlob');}else{t.classList.add('active');document.getElementById('autoAboutBlank').classList.remove('active');localStorage.setItem('autoBlob','true');localStorage.removeItem('autoAboutBlank');}}
-        function applyPresetCloak(){const p=document.getElementById('presetCloak').value;if(p&&cloakPresets[p])setTabCloak(cloakPresets[p].title,cloakPresets[p].icon);}
-        function applyCustomCloak(){const t=document.getElementById('customTitle').value;const i=document.getElementById('customIcon').value;if(t||i)setTabCloak(t||document.title,i);}
-        function setTabCloak(t,i){document.title=t;let l=document.querySelector("link[rel~='icon']");if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l);}if(i)l.href=i;}
-        function addCustomPreset(){const t=document.getElementById('newCloakTitle').value;const i=document.getElementById('newCloakIcon').value;if(!t||!i){alert('Please enter both title and icon URL');return;}const k=t.toLowerCase().replace(/\s+/g,'-');customCloaks[k]={title:t,icon:i};localStorage.setItem('customCloaks',JSON.stringify(customCloaks));document.getElementById('newCloakTitle').value='';document.getElementById('newCloakIcon').value='';updateCloakDropdown();alert('Preset added successfully!');}
-        function updateCloakDropdown(){const s=document.getElementById('presetCloak');const g=s.querySelector('optgroup[label="Custom Presets"]');if(g)g.remove();if(Object.keys(customCloaks).length){const o=document.createElement('optgroup');o.label='Custom Presets';Object.keys(customCloaks).forEach(k=>{const opt=document.createElement('option');opt.value=k;opt.textContent=customCloaks[k].title;o.appendChild(opt);});s.appendChild(o);}}
-        function changeSearchEngine(){const e=document.getElementById('searchEngine').value;currentSearchEngine=e;localStorage.setItem('searchEngine',e);}
-        togglePassword.addEventListener('click',e=>{e.preventDefault();const t=accessInput.getAttribute('type')==='password'?'text':'password';accessInput.setAttribute('type',t);togglePassword.innerHTML=t==='text'?'<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/>':'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';});
-        welcomeScreen.addEventListener('click',()=>{welcomeScreen.style.animation='smoothFadeIn 1s cubic-bezier(.4,0,.2,1) reverse forwards';setTimeout(()=>{welcomeScreen.classList.remove('active');accessScreen.classList.add('active');setTimeout(()=>accessInput.focus(),400);},800);});
-        accessInput.addEventListener('keyup',e=>{if(e.key==='Enter')checkCode();});
-        accessInput.addEventListener('input',()=>{accessInput.classList.remove('error');accessInput.classList.remove('success');});
-        function checkCode(){const v=accessInput.value;if(v===CORRECT_CODE){accessInput.classList.add('success');setTimeout(()=>{accessScreen.style.animation='smoothFadeIn 1s cubic-bezier(.4,0,.2,1) reverse forwards';setTimeout(()=>{accessScreen.classList.remove('active');browserScreen.classList.add('active');modalOverlay.classList.add('active');},800);},500);}else{accessInput.classList.add('error');setTimeout(()=>accessInput.value='',400);}}
-        function startLoading(){loadingBar.style.opacity='1';loadingBar.style.width='6%';setTimeout(()=>loadingBar.style.width='48%',160);setTimeout(()=>loadingBar.style.width='78%',720);}
-        function finishLoading(){loadingBar.style.width='100%';setTimeout(()=>{loadingBar.style.opacity='0';loadingBar.style.width='0%';},260);}
-        async function loadUrl(input){if(typeof registerSW!=='undefined'){try{await registerSW();}catch{}}const se=searchEngines[currentSearchEngine];let url=(input.includes('.')||input.startsWith('http'))?(input.startsWith('http')?input:'https://'+input):se.replace('%s',encodeURIComponent(input));startLoading();homeScreen.style.display='none';browserHeader.classList.add('show');browserFrame.classList.add('active');if(connection){let w=(location.protocol==="https:"?"wss":"ws")+"://"+location.host+"/wisp/";try{if((await connection.getTransport())!=="/epoxy/index.mjs")await connection.setTransport("/epoxy/index.mjs",[{wisp:w}]);}catch{}}if(scramjet){const enc=scramjet.encodeUrl.bind(scramjet);browserFrame.src=enc(url);}else{browserFrame.src='/service/'+url;}urlInput.value=url;if(historyIndex<history.length-1)history=history.slice(0,historyIndex+1);history.push(url);historyIndex++;setTimeout(finishLoading,1000);}
-        function showHome(){homeScreen.style.display='flex';browserHeader.classList.remove('show');browserFrame.classList.remove('active');browserFrame.src='';urlInput.value='';}
-        searchBtn.addEventListener('click',()=>{if(urlInput.value)loadUrl(urlInput.value);});
-        urlInput.addEventListener('keydown',e=>{if(e.key==='Enter')loadUrl(urlInput.value);});
-        homeSearchInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&homeSearchInput.value){loadUrl(homeSearchInput.value);homeSearchInput.value='';}});
-        reloadBtn.addEventListener('click',()=>{if(browserFrame.src)browserFrame.src=browserFrame.src;});
-        document.querySelectorAll('.shortcut').forEach(s=>{s.addEventListener('click',()=>{const u=s.dataset.url;if(u)loadUrl(u);});});
-        function addTab(){const id=Date.now();const tab=document.createElement('div');tab.className='tab';tab.dataset.id=id;tab.innerHTML=`New Tab <button class="tab-close" onclick="closeTab(${id})">×</button>`;tab.onclick=e=>{if(!e.target.classList.contains('tab-close'))switchTab(id);};tabsBar.appendChild(tab);tabs.push({id,url:'about:blank'});switchTab(id);}
-        function switchTab(id){activeTab=id;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id==id));const t=tabs.find(x=>x.id==id);if(t)browserFrame.src=t.url;}
-        function closeTab(id){const idx=tabs.findIndex(x=>x.id==id);if(idx===-1)return;tabs.splice(idx,1);document.querySelector(`[data-id="${id}"]`).remove();if(activeTab==id&&tabs.length){switchTab(tabs[tabs.length-1].id);}if(!tabs.length)addTab();}
-        document.addEventListener('keydown',e=>{if(e.key==='Escape'&&e.ctrlKey&&e.shiftKey){window.location.replace('about:blank');}});
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        window.addEventListener('load', async () => {
+            if (typeof $scramjetLoadController !== 'undefined') {
+                const { ScramjetController } = $scramjetLoadController();
+                scramjet = new ScramjetController({
+                    files: {
+                        wasm: '/scram/scramjet.wasm.wasm',
+                        all: '/scram/scramjet.all.js',
+                        sync: '/scram/scramjet.sync.js',
+                    },
+                });
+                scramjet.init();
+            }
+            
+            if (typeof BareMux !== 'undefined') {
+                connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+            }
+
+            loadGames();
+            loadApps();
+            loadSettings();
+            checkAutoCloak();
+        });
+
+        function loadSettings() {
+            const savedEngine = localStorage.getItem('searchEngine');
+            if (savedEngine) {
+                currentSearchEngine = savedEngine;
+                document.getElementById('searchEngine').value = savedEngine;
+            }
+
+            const savedCloaks = localStorage.getItem('customCloaks');
+            if (savedCloaks) {
+                customCloaks = JSON.parse(savedCloaks);
+                updateCloakDropdown();
+            }
+
+            const autoAbout = localStorage.getItem('autoAboutBlank') === 'true';
+            const autoB = localStorage.getItem('autoBlob') === 'true';
+            
+            if (autoAbout) document.getElementById('autoAboutBlank').classList.add('active');
+            if (autoB) document.getElementById('autoBlob').classList.add('active');
+        }
+
+        function checkAutoCloak() {
+            if (localStorage.getItem('autoAboutBlank') === 'true') {
+                launchAboutBlank();
+            } else if (localStorage.getItem('autoBlob') === 'true') {
+                launchBlob();
+            }
+        }
+
+        function loadApps() {
+            allApps = appsData;
+            apps = allApps;
+            displayApps();
+        }
+
+        function displayApps() {
+            appsList.innerHTML = '';
+            apps.forEach(app => {
+                const appItem = document.createElement('div');
+                appItem.className = 'grid-item';
+                appItem.onclick = () => {
+                    loadUrl(app.url);
+                    showProxy();
+                };
+                appItem.innerHTML = `
+                    <img src="${app.img}" alt="${app.name}" onerror="this.src='https://via.placeholder.com/80 '">
+                    <span>${app.name}</span>
+                `;
+                appsList.appendChild(appItem);
+            });
+
+            if (apps.length === 0) {
+                appsList.innerHTML = '<p style="padding: 40px; color: rgba(255,215,0,0.5); text-align: center;">No apps found</p>';
+            }
+        }
+
+        function filterApps() {
+            const query = appsSearch.value.toLowerCase();
+            apps = allApps.filter(app => app.name.toLowerCase().includes(query));
+            displayApps();
+        }
+
+        async function loadGames() {
+            try {
+                const response = await fetch(ZONES_URL + "?t=" + Date.now());
+                allGames = await response.json();
+                games = allGames;
+                displayGames();
+            } catch (error) {
+                console.error("Failed to load games:", error);
+                gamesList.innerHTML = '<p style="padding: 40px; color: rgba(255,215,0,0.5); text-align: center;">Failed to load games</p>';
+            }
+        }
+
+        function displayGames() {
+            gamesList.innerHTML = '';
+            
+            const requestItem = document.createElement('div');
+            requestItem.className = 'grid-item request-game';
+            requestItem.onclick = () => window.open(GAME_REQUEST_URL, '_blank');
+            requestItem.innerHTML = `
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v8"/>
+                    <path d="M8 12h8"/>
+                </svg>
+                <span>Request a Game</span>
+            `;
+            gamesList.appendChild(requestItem);
+            
+            games.forEach(game => {
+                const gameItem = document.createElement('div');
+                gameItem.className = 'grid-item';
+                gameItem.onclick = () => playGame(game);
+                
+                const coverUrl = game.cover
+                    .replace('{COVER_URL}', COVER_URL)
+                    .replace('{HTML_URL}', HTML_URL);
+                
+                gameItem.innerHTML = `
+                    <img src="${coverUrl}" alt="${game.name}">
+                    <span>${game.name}</span>
+                `;
+                gamesList.appendChild(gameItem);
+            });
+
+            if (games.length === 0) {
+                gamesList.innerHTML = requestItem.outerHTML + '<p style="padding: 40px; color: rgba(255,215,0,0.5); text-align: center; grid-column: 1/-1;">No games found</p>';
+            }
+        }
+
+        function filterGames() {
+            const query = gamesSearch.value.toLowerCase();
+            games = allGames.filter(game => game.name.toLowerCase().includes(query));
+            displayGames();
+        }
+
+        async function playGame(game) {
+            if (game.url.startsWith('http')) {
+                loadUrl(game.url);
+                showProxy();
+                return;
+            }
+
+            const gameUrl = game.url
+                .replace('{COVER_URL}', COVER_URL)
+                .replace('{HTML_URL}', HTML_URL);
+
+            try {
+                const response = await fetch(gameUrl + "?t=" + Date.now());
+                const html = await response.text();
+                
+                const newWindow = window.open('about:blank', '_blank');
+                if (newWindow) {
+                    newWindow.document.open();
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    newWindow.document.title = game.name;
+                }
+            } catch (error) {
+                console.error("Failed to load game:", error);
+                alert("Failed to load game. Please try again.");
+            }
+        }
+
+        function showProxy() {
+            document.getElementById('proxyIcon').classList.add('active');
+            document.getElementById('appsIcon').classList.remove('active');
+            document.getElementById('gamesIcon').classList.remove('active');
+            document.getElementById('settingsIcon').classList.remove('active');
+            appsPanel.classList.remove('active');
+            gamesPanel.classList.remove('active');
+            settingsPanel.classList.remove('active');
+        }
+
+        function showApps() {
+            document.getElementById('appsIcon').classList.add('active');
+            document.getElementById('proxyIcon').classList.remove('active');
+            document.getElementById('gamesIcon').classList.remove('active');
+            document.getElementById('settingsIcon').classList.remove('active');
+            appsPanel.classList.add('active');
+            gamesPanel.classList.remove('active');
+            settingsPanel.classList.remove('active');
+        }
+
+        function showGames() {
+            document.getElementById('gamesIcon').classList.add('active');
+            document.getElementById('proxyIcon').classList.remove('active');
+            document.getElementById('appsIcon').classList.remove('active');
+            document.getElementById('settingsIcon').classList.remove('active');
+            gamesPanel.classList.add('active');
+            appsPanel.classList.remove('active');
+            settingsPanel.classList.remove('active');
+        }
+
+        function showSettings() {
+            document.getElementById('settingsIcon').classList.add('active');
+            document.getElementById('proxyIcon').classList.remove('active');
+            document.getElementById('appsIcon').classList.remove('active');
+            document.getElementById('gamesIcon').classList.remove('active');
+            settingsPanel.classList.add('active');
+            appsPanel.classList.remove('active');
+            gamesPanel.classList.remove('active');
+        }
+
+        function showSettingsSection(section) {
+            document.querySelectorAll('.settings-nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.settings-section').forEach(sec => sec.classList.remove('active'));
+            
+            event.target.closest('.settings-nav-item').classList.add('active');
+            
+            if (section === 'cloaking') document.getElementById('cloakingSection').classList.add('active');
+            if (section === 'proxy') document.getElementById('proxySection').classList.add('active');
+        }
+
+        function launchAboutBlank() {
+            const win = window.open('about:blank', '_blank');
+            if (win) {
+                win.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head><title>about:blank</title></head>
+                    <body style="margin:0;padding:0;overflow:hidden;">
+                        <iframe src="${window.location.href}" style="width:100%;height:100vh;border:0;"></iframe>
+                    </body>
+                    </html>
+                `);
+                win.document.close();
+            }
+        }
+
+        function launchBlob() {
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head><title>about:blank</title></head>
+                <body style="margin:0;padding:0;overflow:hidden;">
+                    <iframe src="${window.location.href}" style="width:100%;height:100vh;border:0;"></iframe>
+                </body>
+                </html>
+            `;
+            const blob = new Blob([html], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }
+
+        function toggleAutoAboutBlank() {
+            const toggle = document.getElementById('autoAboutBlank');
+            const isActive = toggle.classList.contains('active');
+            
+            if (isActive) {
+                toggle.classList.remove('active');
+                localStorage.removeItem('autoAboutBlank');
+            } else {
+                toggle.classList.add('active');
+                document.getElementById('autoBlob').classList.remove('active');
+                localStorage.setItem('autoAboutBlank', 'true');
+                localStorage.removeItem('autoBlob');
+            }
+        }
+
+        function toggleAutoBlob() {
+            const toggle = document.getElementById('autoBlob');
+            const isActive = toggle.classList.contains('active');
+            
+            if (isActive) {
+                toggle.classList.remove('active');
+                localStorage.removeItem('autoBlob');
+            } else {
+                toggle.classList.add('active');
+                document.getElementById('autoAboutBlank').classList.remove('active');
+                localStorage.setItem('autoBlob', 'true');
+                localStorage.removeItem('autoAboutBlank');
+            }
+        }
+
+        function applyPresetCloak() {
+            const preset = document.getElementById('presetCloak').value;
+            if (preset && cloakPresets[preset]) {
+                setTabCloak(cloakPresets[preset].title, cloakPresets[preset].icon);
+            }
+        }
+
+        function applyCustomCloak() {
+            const title = document.getElementById('customTitle').value;
+            const icon = document.getElementById('customIcon').value;
+            if (title || icon) {
+                setTabCloak(title || document.title, icon);
+            }
+        }
+
+        function setTabCloak(title, iconUrl) {
+            document.title = title;
+            
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            if (iconUrl) link.href = iconUrl;
+        }
+
+        function addCustomPreset() {
+            const title = document.getElementById('newCloakTitle').value;
+            const icon = document.getElementById('newCloakIcon').value;
+            
+            if (!title || !icon) {
+                alert('Please enter both title and icon URL');
+                return;
+            }
+
+            const key = title.toLowerCase().replace(/\s+/g, '-');
+            customCloaks[key] = { title, icon };
+            localStorage.setItem('customCloaks', JSON.stringify(customCloaks));
+            
+            document.getElementById('newCloakTitle').value = '';
+            document.getElementById('newCloakIcon').value = '';
+            
+            updateCloakDropdown();
+            alert('Preset added successfully!');
+        }
+
+        function updateCloakDropdown() {
+            const select = document.getElementById('presetCloak');
+            const customOptgroup = document.createElement('optgroup');
+            customOptgroup.label = 'Custom Presets';
+            
+            Object.keys(customCloaks).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = customCloaks[key].title;
+                customOptgroup.appendChild(option);
+            });
+            
+            const existingCustom = select.querySelector('optgroup[label="Custom Presets"]');
+            if (existingCustom) existingCustom.remove();
+            
+            if (Object.keys(customCloaks).length > 0) {
+                select.appendChild(customOptgroup);
+            }
+        }
+
+        function changeSearchEngine() {
+            const engine = document.getElementById('searchEngine').value;
+            currentSearchEngine = engine;
+            localStorage.setItem('searchEngine', engine);
+        }
+
+        togglePassword.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        togglePassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const type = accessInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            accessInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                togglePassword.innerHTML = `
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                    <line x1="2" x2="22" y1="2" y2="22"/>
+                `;
+            } else {
+                togglePassword.innerHTML = `
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                `;
+            }
+            setTimeout(() => accessInput.focus(), 10);
+        });
+
+        welcomeScreen.addEventListener('click', () => {
+            welcomeScreen.style.animation = 'smoothFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
+            setTimeout(() => {
+                welcomeScreen.classList.remove('active');
+                accessScreen.classList.add('active');
+                setTimeout(() => accessInput.focus(), 400);
+            }, 800);
+        });
+
+        accessInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') checkCode();
+        });
+
+        accessInput.addEventListener('input', () => {
+            accessInput.classList.remove('error');
+            accessInput.classList.remove('success');
+        });
+
+        function checkCode() {
+            const enteredCode = accessInput.value;
+            if (enteredCode === CORRECT_CODE) {
+                accessInput.classList.add('success');
+                setTimeout(() => {
+                    accessScreen.style.animation = 'smoothFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
+                    setTimeout(() => {
+                        accessScreen.classList.remove('active');
+                        browserScreen.classList.add('active');
+                        modalOverlay.classList.add('active');
+                    }, 800);
+                }, 500);
+            } else {
+                accessInput.classList.add('error');
+                setTimeout(() => accessInput.value = '', 400);
+            }
+        }
+
+        function startLoading() {
+            loadingBar.style.opacity = '1';
+            loadingBar.style.width = '6%';
+            setTimeout(() => loadingBar.style.width = '48%', 160);
+            setTimeout(() => loadingBar.style.width = '78%', 720);
+        }
+
+        function finishLoading() {
+            loadingBar.style.width = '100%';
+            setTimeout(() => {
+                loadingBar.style.opacity = '0';
+                loadingBar.style.width = '0%';
+            }, 260);
+        }
+
+        async function loadUrl(input) {
+            if (typeof registerSW !== 'undefined') {
+                try {
+                    await registerSW();
+                } catch (err) {
+                    console.error("Failed to register service worker:", err);
+                }
+            }
+
+            const searchEngine = searchEngines[currentSearchEngine];
+            let url = (typeof search !== 'undefined') ? search(input, searchEngine) : 
+                        (input.includes('.') || input.startsWith('http')) ? 
+                        (input.startsWith('http') ? input : 'https://' + input) : 
+                        searchEngine.replace('%s', encodeURIComponent(input));
+
+            startLoading();
+            homeScreen.style.display = 'none';
+            browserHeader.classList.add('show');
+            browserFrame.classList.add('active');
+
+            if (connection) {
+                let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+                try {
+                    if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
+                        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+                    }
+                } catch(e) {}
+            }
+
+            if (scramjet) {
+                const sjEncode = scramjet.encodeUrl.bind(scramjet);
+                browserFrame.src = sjEncode(url);
+            } else {
+                browserFrame.src = '/service/' + url;
+            }
+            
+            urlInput.value = url;
+
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(url);
+            historyIndex++;
+
+            setTimeout(finishLoading, 1000);
+        }
+
+        function showHome() {
+            homeScreen.style.display = 'flex';
+            browserHeader.classList.remove('show');
+            browserFrame.classList.remove('active');
+            browserFrame.src = '';
+            urlInput.value = '';
+        }
+
+        searchBtn.addEventListener('click', () => {
+            if (urlInput.value) loadUrl(urlInput.value);
+        });
+
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loadUrl(urlInput.value);
+        });
+
+        homeSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && homeSearchInput.value) {
+                loadUrl(homeSearchInput.value);
+                homeSearchInput.value = '';
+            }
+        });
+
+        reloadBtn.addEventListener('click', () => {
+            if (browserFrame.src) {
+                browserFrame.src = browserFrame.src;
+            }
+        });
+
+        document.querySelectorAll('.shortcut').forEach(shortcut => {
+            shortcut.addEventListener('click', () => {
+                const url = shortcut.getAttribute('data-url');
+                if (url) loadUrl(url);
+            });
+        });
+
+        function toggleDevTools() {
+            const panel = document.getElementById('devtoolsPanel');
+            const isActive = panel.classList.contains('active');
+            
+            if (isActive) {
+                panel.classList.remove('active');
+            } else {
+                panel.classList.add('active');
+                if (document.querySelector('.devtools-tab.active').textContent === 'Elements') {
+                    inspectIframe();
+                }
+            }
+        }
+
+        function switchDevTab(tab) {
+            document.querySelectorAll('.devtools-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.devtools-section').forEach(s => s.classList.remove('active'));
+            
+            if (tab === 'elements') {
+                document.querySelector('.devtools-tab').classList.add('active');
+                document.getElementById('elementsTab').classList.add('active');
+                inspectIframe();
+            } else if (tab === 'console') {
+                document.querySelectorAll('.devtools-tab')[1].classList.add('active');
+                document.getElementById('consoleTab').classList.add('active');
+            }
+        }
+
+        function inspectIframe() {
+            const frame = document.getElementById('sj-frame');
+            const tree = document.getElementById('elementTree');
+            
+            tree.innerHTML = '';
+            
+            if (!frame.src || frame.src === 'about:blank') {
+                tree.innerHTML = '<div style="color: rgba(255,215,0,0.5); padding: 20px;">No page loaded. Load a page to inspect elements.</div>';
+                return;
+            }
+
+            const docNode = createElementNode('html', [], 0);
+            tree.appendChild(docNode);
+            
+            const headNode = createElementNode('head', [], 1);
+            const bodyNode = createElementNode('body', [], 1);
+            const iframeNode = createElementNode('iframe', [['src', frame.src], ['class', 'frame active']], 1);
+            
+            docNode.querySelector('.element-children').appendChild(headNode);
+            docNode.querySelector('.element-children').appendChild(bodyNode);
+            docNode.querySelector('.element-children').appendChild(iframeNode);
+            
+            docNode.querySelector('.element-collapse').click();
+        }
+
+        function createElementNode(tagName, attrs, level) {
+            const node = document.createElement('div');
+            node.className = 'element-node';
+            node.style.paddingLeft = (20 + level * 16) + 'px';
+            
+            const collapse = document.createElement('span');
+            collapse.className = 'element-collapse';
+            collapse.textContent = '▶';
+            collapse.onclick = (e) => {
+                e.stopPropagation();
+                const children = node.querySelector('.element-children');
+                if (children) {
+                    const isExpanded = children.classList.contains('expanded');
+                    children.classList.toggle('expanded');
+                    collapse.textContent = isExpanded ? '▶' : '▼';
+                }
+            };
+            
+            const content = document.createElement('span');
+            content.innerHTML = `<span class="element-tag">&lt;${tagName}</span>`;
+            
+            if (attrs.length > 0) {
+                attrs.forEach(([name, value]) => {
+                    content.innerHTML += ` <span class="element-attr">${name}</span>=<span class="element-text">"${value}"</span>`;
+                });
+            }
+            
+            content.innerHTML += `<span class="element-tag">&gt;</span>`;
+            
+            const children = document.createElement('div');
+            children.className = 'element-children';
+            
+            const closeTag = document.createElement('div');
+            closeTag.className = 'element-node';
+            closeTag.style.paddingLeft = (20 + level * 16) + 'px';
+            closeTag.innerHTML = `<span class="element-tag">&lt;/${tagName}&gt;</span>`;
+            
+            node.appendChild(collapse);
+            node.appendChild(content);
+            node.appendChild(children);
+            node.appendChild(closeTag);
+            
+            return node;
+        }
+
+        const consoleInput = document.getElementById('consoleInput');
+        const consoleOutput = document.getElementById('consoleOutput');
+
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addConsoleEntry('log', args);
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addConsoleEntry('warn', args);
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addConsoleEntry('error', args);
+        };
+
+        function addConsoleEntry(type, args) {
+            const entry = document.createElement('div');
+            entry.className = `console-entry ${type}`;
+            
+            const icon = document.createElement('span');
+            icon.className = 'console-icon';
+            
+            if (type === 'log') {
+                icon.innerHTML = '›';
+            } else if (type === 'warn') {
+                icon.innerHTML = '⚠';
+            } else if (type === 'error') {
+                icon.innerHTML = '✕';
+            }
+            
+            const message = document.createElement('span');
+            message.textContent = args.map(arg => {
+                if (typeof arg === 'object') {
+                    try {
+                        return JSON.stringify(arg, null, 2);
+                    } catch (e) {
+                        return String(arg);
+                    }
+                }
+                return String(arg);
+            }).join(' ');
+            
+            entry.appendChild(icon);
+            entry.appendChild(message);
+            consoleOutput.appendChild(entry);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            
+            consoleHistory.push({ type, args });
+        }
+
+        consoleInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const code = consoleInput.value.trim();
+                if (code) {
+                    executeConsoleCode(code);
+                    consoleInput.value = '';
+                }
+            }
+        });
+
+        function executeConsoleCode(code) {
+            const inputEntry = document.createElement('div');
+            inputEntry.className = 'console-entry log';
+            inputEntry.innerHTML = `<span class="console-icon">&gt;</span><span style="color: #FFD700;">${code}</span>`;
+            consoleOutput.appendChild(inputEntry);
+            
+            try {
+                const result = eval(code);
+                if (result !== undefined) {
+                    addConsoleEntry('log', [result]);
+                }
+            } catch (error) {
+                addConsoleEntry('error', [error.message]);
+            }
+            
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+            consoleHistory = [];
+        }
+
+        addConsoleEntry('log', ['Draco V3 Developer Tools initialized']);
+        addConsoleEntry('log', ['Type JavaScript commands to execute them']);
     </script>
 </body>
 </html>
